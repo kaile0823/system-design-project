@@ -3,6 +3,8 @@
 1. 關於我們所使用的web tech，如果有不明白可以閲讀我做的筆記，裏面記錄著我第一次做網站的筆記，也就是本作業[Nut17 Notes](https://nutnut17.github.io/thulite-project/docs/web/web-tech-stack/)
 
 2. 未完成作業和分工請到TODO.md看
+   
+3. 請到`./_information/reference.md` 看相關筆記
 
 ## Structure
 
@@ -25,8 +27,10 @@ npm install -g @vue/cli
 npm install express
 npm install cors
 npm install concurrently
-npm install 
+# At ./frontend/
 npm install primevue @primevue/themes
+npm install primeflex
+npm install primeicons
 ```
 
 ## GitHub 操作

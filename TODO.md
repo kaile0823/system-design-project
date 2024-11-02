@@ -3,8 +3,9 @@
 ## High Priority
 
 - [ ] Main page
-- [ ] Signin, Signup, Forgot Password
+- [ ] 蘇莉涵: Signin, Signup, Forgot Password
 - [ ] Shop, Shopping Cart
+- [ ] Database: 蘇莉涵
 
 ## Medium Priority
 

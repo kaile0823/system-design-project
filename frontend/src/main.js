@@ -11,6 +11,7 @@ import { definePreset } from "@primevue/themes"
 const app = createApp(App)
 app.use(router)
 
+// Configuration of PrimeVue theme
 const MyPreset = definePreset(Aura, {
     semantic: {
         primary: {
@@ -34,8 +35,8 @@ const MyPreset = definePreset(Aura, {
                 primary: {
                     color: '{indigo.500}',
                     inverseColor: '#ffffff',
-                    hoverColor: '{indigo.900}',
-                    activeColor: '{indigo.800}'
+                    hoverColor: '{indigo.600}',
+                    activeColor: '{indigo.600}'
                 },
                 highlight: {
                     background: '{indigo.950}',
@@ -45,17 +46,17 @@ const MyPreset = definePreset(Aura, {
                 },
                 surface: {
                     0: '#ffffff',
-                    50: '{slate.50}',
-                    100: '{slate.100}',
-                    200: '{slate.200}',
-                    300: '{slate.300}',
-                    400: '{slate.400}',
-                    500: '{slate.500}',
-                    600: '{slate.600}',
-                    700: '{slate.700}',
-                    800: '{slate.800}',
-                    900: '{slate.900}',
-                    950: '{slate.950}'
+                    50: '{neutral.50}',
+                    100: '{neutral.100}',
+                    200: '{neutral.200}',
+                    300: '{neutral.300}',
+                    400: '{neutral.400}',
+                    500: '{neutral.500}',
+                    600: '{neutral.600}',
+                    700: '{neutral.700}',
+                    800: '{neutral.800}',
+                    900: '{neutral.900}',
+                    950: '{neutral.950}'
                 }
             },
             dark: {
@@ -63,10 +64,10 @@ const MyPreset = definePreset(Aura, {
                     hoverBorderColor: "{primary.color}"
                 },
                 primary: {
-                    color: '{zinc.50}',
-                    inverseColor: '{zinc.950}',
-                    hoverColor: '{zinc.300}',
-                    activeColor: '{zinc.200}'
+                    color: '{neutral.800}',
+                    inverseColor: '{neutral.50}',
+                    hoverColor: '{neutral.800}',
+                    activeColor: '{neutral.800}'
                 },
                 highlight: {
                     background: 'rgba(250, 250, 250, .16)',
@@ -75,18 +76,18 @@ const MyPreset = definePreset(Aura, {
                     focusColor: 'rgba(255,255,255,.87)'
                 },
                 surface: {
-                    0: '#ffffff',
-                    50: '{slate.50}',
-                    100: '{slate.100}',
-                    200: '{slate.200}',
-                    300: '{slate.300}',
-                    400: '{slate.400}',
-                    500: '{slate.500}',
-                    600: '{slate.600}',
-                    700: '{slate.700}',
-                    800: '{slate.800}',
-                    900: '{slate.900}',
-                    950: '{slate.950}'
+                    0: '{neutral.950}',
+                    50: '{neutral.900}',
+                    100: '{neutral.800}',
+                    200: '{neutral.700}',
+                    300: '{neutral.600}',
+                    400: '{neutral.500}',
+                    500: '{neutral.400}',
+                    600: '{neutral.300}',
+                    700: '{neutral.200}',
+                    800: '{neutral.100}',
+                    900: '{neutral.50}',
+                    950: '{neutral.0}'
                 }
             }
         },
@@ -96,17 +97,41 @@ const MyPreset = definePreset(Aura, {
             color: '{primary.color}',
             offset: '1px'
         }
+    },
+    components: {
+        card: {
+            colorScheme: {
+                light: {
+                    root: {
+                        background: '{surface.50}',
+                        color: '{surface.700}'
+                    },
+                    subtitle: {
+                        color: '{surface.500}'
+                    }
+                },
+                dark: {
+                    root: {
+                        background: '{surface.900}',
+                        color: '{surface.0}'
+                    },
+                    subtitle: {
+                        color: '{surface.400}'
+                    }
+                }
+            }
+        }
     }
 })
 
-// Remove this to run todo components examples
+// Configuration of PrimeVue
 app.use(PrimeVue, {
     theme: {
         preset: MyPreset,
         options: {
             prefix: 'p',
             darkModeSelector: '.my-app-dark',
-            cssLayer: false
+            cssLayer: true
         }
     }
 });
