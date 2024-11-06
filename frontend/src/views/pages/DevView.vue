@@ -2,6 +2,8 @@
 
 import { ref, reactive } from 'vue'
 
+import FormComp from '@/components/FormComp.vue';
+
 import InputText from 'primevue/inputtext';
 import Button from 'primevue/button';
 import DataTable from 'primevue/datatable';
@@ -18,10 +20,15 @@ const products = ref([
   { code: 'av2231fwg', name: 'Brown Purse', category: 'Clothing', quantity: 32, price: 120 },
 ])
 
+
+
 </script>
 
 <template>
   This is dev
+
+  <FormComp />
+
   <DataTable :value="products" tableStyle="min-width: 50rem">
     <Column field="code" header="Code"></Column>
     <Column field="name" header="Name"></Column>

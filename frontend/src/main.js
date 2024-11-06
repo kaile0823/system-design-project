@@ -8,8 +8,13 @@ import PrimeVue from 'primevue/config'
 import Aura from '@primevue/themes/aura'
 import { definePreset } from "@primevue/themes"
 
+import ToastService from 'primevue/toastservice'
+import ConfirmationService from 'primevue/confirmationservice'
+
 const app = createApp(App)
 app.use(router)
+app.use(ToastService)
+app.use(ConfirmationService);
 
 // Configuration of PrimeVue theme
 const MyPreset = definePreset(Aura, {
