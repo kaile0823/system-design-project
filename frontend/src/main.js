@@ -117,8 +117,8 @@ const MyPreset = definePreset(Aura, {
                 },
                 dark: {
                     root: {
-                        background: '{surface.900}',
-                        color: '{surface.0}'
+                        background: '{surface.200}',
+                        color: '{surface.500}'
                     },
                     subtitle: {
                         color: '{surface.400}'

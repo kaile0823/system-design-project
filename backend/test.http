@@ -1,6 +1,8 @@
-POST http://localhost:3001/api/tasks HTTP/1.1
+POST http://localhost:3001/api/users HTTP/1.1
 content-type: application/json
 
 {
-    "text": "Item-4"
+  "name": "Wilson",
+  "email": "wilson@gmail.com",
+  "password": "securepassword"
 }

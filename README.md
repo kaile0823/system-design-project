@@ -27,6 +27,7 @@ npm install -g @vue/cli
 npm install express
 npm install cors
 npm install concurrently
+npm install dotenv
 # At ./frontend/
 npm install primevue @primevue/themes
 npm install primeflex

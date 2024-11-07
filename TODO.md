@@ -39,6 +39,10 @@
 - [] 研究Mongo
 - [] web deploy
 
+## 更多
+
+- [] 更豐富的字體 [Variable fonts](https://fonts.google.com/knowledge/introducing_type/introducing_variable_fonts)
+
 ### 整體分工大方向
 
 系統: 侯有鍵
