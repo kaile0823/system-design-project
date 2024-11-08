@@ -20,9 +20,10 @@ system-design-project/
 
 ## 安裝
 
-請安裝Git,`Node.js`后在terminal下載這些dependencies
+請安裝`git`和`Node.js`后在terminal下載這些dependencies
 
 ```bash
+
 npm install -g @vue/cli
 npm install express
 npm install cors
