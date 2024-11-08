@@ -3,7 +3,7 @@
 1. 關於我們所使用的web tech，如果有不明白可以閲讀我做的筆記，裏面記錄著我第一次做網站的筆記，也就是本作業[Nut17 Notes](https://nutnut17.github.io/thulite-project/docs/web/web-tech-stack/)
 
 2. 未完成作業和分工請到TODO.md看
-   
+
 3. 請到`./_information/reference.md` 看相關筆記
 
 ## Structure
@@ -20,31 +20,27 @@ system-design-project/
 
 ## 安裝
 
-請安裝`git`和`Node.js`后在terminal下載這些dependencies
+請安裝`git`和`Node.js`后在terminal 跑以下步驟
 
 ```bash
-
-npm install -g @vue/cli
-npm install express
-npm install cors
-npm install concurrently
-npm install dotenv
-# At ./frontend/
-npm install primevue @primevue/themes
-npm install primeflex
-npm install primeicons
+cd frontend
+npm install
+# 然後你看到安裝了很多資料庫在node_modules裏表示成功
+cd ../backend
+npm install
 ```
 
 ## GitHub 操作
 
-VS Code 已經有結合GitHub的功能，不需要額外下載然和東西
+VS Code 已經有結合GitHub的功能，不需要額外下載然和東西。不懂問ChatGPT
 
-1. 首先在VS Code登入你的Github賬號，沒有賬號就先注冊
-2. 登入之後在首頁複製git空間(Clone Git Repository)，輸入這個網址`https://github.com/NutNut17/system-design-project`就會把共享空間轉到你的電腦。注意看圖片黃色圈圈 ![img1](_information/tut_img1.png)
-3. 使用前在VS Code左邊第三個欄位（Source Control）更新至最新版本 ![img2](_information/tut_img2.png)
-4. 做好更變后，請在（Source Control）裏確認更新資訊，好了按 Commit交出更新 ![img3](_information/tut_img3.png) ![img4](_information/tut_img4.png)
-5. 如果有衝突的的話，git會打開頁面讓你確認衝突的情形。解決好衝突的話，確認程式沒問題就按接受變化(Accept Changes)，然後再pull and push ![img5](_information/tut_img5.png) ![img6](_information/tut_img6.png)
-6. 到GitHub Repository看有沒有成功更新，或者在(Source Control)左下角有沒有顯示合并成功的圖 ![img7](_information/tut_img7.png)
+1. 用自己的賬號fork一個你自己的分支
+2. 到VS Code裏登入你的Github，並下載你的repository
+3. 依上面步驟安裝環境
+4. 開始你的開發
+5. 開發完畢後/睡前把你本地端的code上傳到該Github分支上（push）
+6. 同步Github和電腦的code后，開pull request要求跟縂repository合并
+7. 之後每次開始coding之前先跟縂repository更新到你的分支(merge)然後去到第四步
 
 ## 可能會用到的 VS Code Extension
 

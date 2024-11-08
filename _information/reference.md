@@ -2,8 +2,6 @@
 
 ## Vue Framework Template
 
-U
-
 Utilities:
 
 - [Realtime Color Checking](https://www.realtimecolors.com/?colors=040316-fbfbfe-2f27ce-dddbff-443dff&fonts=Inter-Inter)
