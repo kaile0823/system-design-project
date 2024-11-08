@@ -125,6 +125,28 @@ const MyPreset = definePreset(Aura, {
                     }
                 }
             }
+        },
+        toolbar: {
+            colorScheme: {
+                light: {
+                    root: {
+                        background: '{surface.50}',
+                        color: '{surface.700}'
+                    },
+                    border: {
+                        color: '{surface.300}'
+                    }
+                },
+                dark: {
+                    root: {
+                        background: '{surface.200}',
+                        color: '{surface.500}'
+                    },
+                    border: {
+                        color: '{surface.300}'
+                    }
+                }
+            }
         }
     }
 })
