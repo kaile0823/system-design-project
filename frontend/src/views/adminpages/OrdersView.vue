@@ -7,7 +7,7 @@ import Card from 'primevue/card';
     <div class="mt-5">
         <Card>
             <template #content>
-                <h1 class="text-center">User Database</h1>
+                <h1 class="text-center">Orders Database</h1>
             </template>
         </Card>
     </div>

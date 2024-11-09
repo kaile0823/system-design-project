@@ -10,7 +10,9 @@ import PrimePostView from '@/views/pages/PostView.vue'
 import PrimeAdminView from '@/views/pages/AdminView.vue'
 
 import UsersView from '@/views/adminpages/UsersView.vue'
-import DatabaseView from '@/views/adminpages/DatabaseView.vue'
+import DatabaseView from '@/views/adminpages/ItemsView.vue'
+import OrdersView from '@/views/adminpages/OrdersView.vue'
+import CartsView from '@/views/adminpages/CartsView.vue'
 import StatisticsView from '@/views/adminpages/StatisticsView.vue'
 import SettingsView from '@/views/adminpages/SettingsView.vue'
 
@@ -27,9 +29,11 @@ const routes = [
         path: 'admin', component: PrimeAdminView,
         children: [
           { path: 'users', component: UsersView },
-          { path: 'database', component: DatabaseView },
+          { path: 'items', component: DatabaseView },
+          { path: 'orders', component: OrdersView },
+          { path: 'carts', component: CartsView },
           { path: 'statistics', component: StatisticsView },
-          { path: 'settings', component: SettingsView }
+          { path: 'settings', component: SettingsView },
         ]
       }
     ]

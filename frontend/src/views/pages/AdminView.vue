@@ -12,16 +12,28 @@ import Button from 'primevue/button';
             <template #center>
 
                 <div class="flex align-items-center justify-content-center gap-5">
-                    <router-link to="/main/admin/database">
-                        <a class="flex align-items-center gap-2">
-                            <i class="pi pi-database"></i>
-                            <span>Database</span>
-                        </a>
-                    </router-link>
                     <router-link to="/main/admin/users">
                         <a class="flex align-items-center gap-2">
                             <i class="pi pi-users"></i>
                             <span>Users</span>
+                        </a>
+                    </router-link>
+                    <router-link to="/main/admin/items">
+                        <a class="flex align-items-center gap-2">
+                            <i class="pi pi-warehouse"></i>
+                            <span>Items</span>
+                        </a>
+                    </router-link>
+                    <router-link to="/main/admin/orders">
+                        <a class="flex align-items-center gap-2">
+                            <i class="pi pi-server"></i>
+                            <span>Orders</span>
+                        </a>
+                    </router-link>
+                    <router-link to="/main/admin/carts">
+                        <a class="flex align-items-center gap-2">
+                            <i class="pi pi-cart-arrow-down"></i>
+                            <span>Carts</span>
                         </a>
                     </router-link>
                     <router-link to="/main/admin/statistics">
@@ -36,10 +48,6 @@ import Button from 'primevue/button';
                             <span>Settings</span>
                         </a>
                     </router-link>
-                    <i class="pi pi-cart-arrow-down"></i>
-                    <i class="pi pi-cart-plus"></i>
-                    <i class="pi pi-shopping-cart"></i>
-                    <i class="pi pi-check"></i>
                 </div>
             </template>
         </Toolbar>
