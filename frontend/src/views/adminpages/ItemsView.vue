@@ -43,38 +43,18 @@ const submitted = ref(false);
 
 // Server Functions
 
-// async fetchProducts() {
-//         const response = await axios.get('/api/products');
-//         this.products = response.data;
-//       },
-//       async createProduct() {
-//         await axios.post('/api/products', this.newProduct);
-//         this.newProduct = { name: '', price: '' };
-//         this.fetchProducts();
-//       },
-//       async editProduct(product) {
-//         const updatedProduct = prompt("Enter new name and price", `${product.name}, ${product.price}`);
-//         const [name, price] = updatedProduct.split(", ");
-//         await axios.put(`/api/products/${product.id}`, { name, price });
-//         this.fetchProducts();
-//       },
-//       async deleteProduct(id) {
-//         await axios.delete(`/api/products/${id}`);
-//         this.fetchProducts();
-//       }
-
 // Fetch products from server
 const fetchProducts = async () => {
-  try {
-    const response = await axios.get('http://localhost:3002/api/products');
-    if (response && response.data) {
-      products.value = response.data;
-    } else {
-      console.error('No data received from the API');
+    try {
+        const response = await axios.get('http://localhost:3002/api/products');
+        if (response && response.data) {
+            products.value = response.data;
+        } else {
+            console.error('No data received from the API');
+        }
+    } catch (error) {
+        console.error("Client can't get Products: ", error);
     }
-  } catch (error) {
-    console.error("Client can't get Products: ", error);
-  }
 };
 
 onMounted(fetchProducts);
@@ -89,87 +69,79 @@ const statuses = ref([
 
 // Create product and push to server
 const addProduct = async () => {
-    products.value.push(product.value);
-    console.log(product.value);
-    try{
+
+    product.value.image = JSON.stringify(product.value.image);
+
+    try {
         const response = await axios.post('http://localhost:3002/api/products', product.value);
-        if (response && response.data) {
-            // products.value.push(response.data);
-           console.log(response.data);
-           console.log(product.value);
+        if (response.status === 201 && response.data) {
+            products.value.push(response.data);
+            toast.add({ severity: 'success', summary: 'Successful', detail: 'Product Created', life: 3000 });
+        } else {
+            throw new Error('Failed to create product');
         }
     } catch (error) {
         console.error("Client can't add Products: ", error);
+        toast.add({ severity: 'error', summary: 'Error', detail: 'Product Not Created', life: 3000 });
     }
 }
 
-// Get new id
-const createId = () => {
-    let id = '';
-    var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    for (var i = 0; i < 5; i++) {
-        id += chars.charAt(Math.floor(Math.random() * chars.length));
+// Update product
+const updateProduct = async () => {
+    try {
+        const id = product.value.id;
+        const response = await axios.put(`http://localhost:3002/api/products/${id}`, product.value);
+        if (response.status === 200) {
+            products.value[findIndexById(product.value.id)] = product.value;
+            toast.add({ severity: 'success', summary: 'Successful', detail: 'Product Updated', life: 3000 });
+        } else {
+            throw new Error('Failed to update product');
+        }
+    } catch (error) {
+        console.error("Client can't update Products: ", error);
+        toast.add({ severity: 'error', summary: 'Error', detail: 'Product Not Updated', life: 3000 });
     }
-    return id;
 }
-
-// Edit product
-
-const saveProduct = () => {
-
-    submitted.value = true;
-
-    if (!product?.value.name?.trim()) {
-        toast.add({ severity: 'error', summary: 'Warning', detail: 'Information incomplete', life: 3000 });
-        return;
-    };
-    if (!product?.value.description?.trim()) {
-        toast.add({ severity: 'error', summary: 'Warning', detail: 'Information incomplete', life: 3000 });
-        return;
-    };
-    if (!product?.value.price?.trim()) {
-        toast.add({ severity: 'error', summary: 'Warning', detail: 'Information incomplete', life: 3000 });
-        return;
-    };
-    if (!product?.value.quantity?.trim()) {
-        toast.add({ severity: 'error', summary: 'Warning', detail: 'Information incomplete', life: 3000 });
-        return;
-    };
-    if (!product?.value.category?.trim()) {
-        toast.add({ severity: 'error', summary: 'Warning', detail: 'Information incomplete', life: 3000 });
-        return;
-    };
-
-    if (product.value.id) {
-        products.value[findIndexById(product.value.id)] = product.value;
-        toast.add({ severity: 'success', summary: 'Successful', detail: 'Product Updated', life: 3000 });
-    }
-    else {
-        product.value.id = createId();
-        product.value.image = 'product-placeholder.svg';
-        addProduct();
-        toast.add({ severity: 'success', summary: 'Successful', detail: 'Product Created', life: 3000 });
-    }
-
-    productDialog.value = false;
-    product.value = {};
-};
 
 // Delete product
-const deleteProduct = () => {
-    products.value = products.value.filter(val => val.id !== product.value.id);
-    // ## To push to server
-    deleteProductDialog.value = false;
-    product.value = {};
-    toast.add({ severity: 'success', summary: 'Successful', detail: 'Product Deleted', life: 3000 });
+
+const deleteProduct = async () => {
+    try {
+        const id = product.value.id;
+        const response = await axios.delete(`http://localhost:3002/api/products/${id}`);
+        if (response.status === 204) {
+            products.value = products.value.filter(val => val.id !== product.value.id);
+            product.value = {};
+            toast.add({ severity: 'success', summary: 'Successful', detail: 'Product Deleted', life: 3000 });
+            deleteProductDialog.value = false;
+        } else {
+            throw new Error('Failed to delete product');
+        }
+    } catch (error) {
+        console.error("Client can't delete Products: ", error);
+        toast.add({ severity: 'error', summary: 'Error', detail: 'Product Not Deleted', life: 3000 });
+    }
+
 };
 
 // Delete productS
-const deleteSelectedProducts = () => {
+const deleteSelectedProducts = async () => {
+
+    for (const product of selectedProducts.value) {
+        try {
+            await axios.delete(`http://localhost:3002/api/products/${product.id}`);
+            console.log(`Deleted product with ID: ${product.id}`);
+        } catch (error) {
+            console.error(`Failed to delete product with ID: ${product.id}`, error);
+            selectedProducts.value = selectedProducts.value.filter(val => val.id !== product.id);
+            toast.add({ severity: 'error', summary: 'Error', detail: 'Product Not Deleted', life: 3000 });
+        }
+    }
     products.value = products.value.filter(val => !selectedProducts.value.includes(val));
     deleteProductsDialog.value = false;
     selectedProducts.value = null;
     toast.add({ severity: 'success', summary: 'Successful', detail: 'Products Deleted', life: 3000 });
+
 };
 
 
@@ -195,6 +167,43 @@ const confirmDeleteProduct = (prod) => {
 
 const confirmDeleteSelected = () => {
     deleteProductsDialog.value = true;
+};
+
+const saveProduct = () => {
+
+    submitted.value = true;
+    product.value.category = product.value.category.label;
+
+    if (!product?.value.name?.trim()) {
+        toast.add({ severity: 'error', summary: 'Warning', detail: 'Information incomplete', life: 3000 });
+        return;
+    };
+    if (!product?.value.description?.trim()) {
+        toast.add({ severity: 'error', summary: 'Warning', detail: 'Information incomplete', life: 3000 });
+        return;
+    };
+    if (!product?.value.price) {
+        toast.add({ severity: 'error', summary: 'Warning', detail: 'Information incomplete', life: 3000 });
+        return;
+    };
+    if (!product?.value.quantity) {
+        toast.add({ severity: 'error', summary: 'Warning', detail: 'Information incomplete', life: 3000 });
+        return;
+    };
+    if (!product?.value.category?.trim()) {
+        toast.add({ severity: 'error', summary: 'Warning', detail: 'Information incomplete', life: 3000 });
+        return;
+    };
+
+    if (product.value.id) {
+        updateProduct();
+    }
+    else {
+        addProduct();
+    }
+
+    productDialog.value = false;
+    product.value = {};
 };
 
 
@@ -255,6 +264,9 @@ const getInventoryStatus = (quantity) => {
 }
 
 const countRating = (data) => {
+    if (data.ratingCount == 0) {
+        data.ratingCount = 1
+    }
     return Math.round(data.ratingScore / data.ratingCount)
 }
 

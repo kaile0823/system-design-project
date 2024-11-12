@@ -4,7 +4,7 @@ import { addProductSqlite, getProductSqlite, updateProductSqlite, deleteProductS
 // Adding a new Product
 export const addProduct = async (req, res) => {
     try {                
-        const product = await addProductSqlite(req.body);
+        const product = await addProductSqlite(req.body); 
         res.status(201).json(product);
     } catch (error) {
         res.status(400).json({ error: `Server can't add Product: ${error.message}` });
@@ -25,7 +25,7 @@ export const getProducts = async (req, res) => {
 export const updateProduct = async (req, res) => {
     try {
         const { id } = req.params;
-        const product = await updateProductSqlite(req.body, id);
+        const product = await updateProductSqlite(id, req.body);
         res.status(200).json(product);
     } catch (error) {
         res.status(400).json({ error: ` Server can't update Product: ${error.message}` });

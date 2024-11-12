@@ -9,6 +9,11 @@ export const addProductSqlite = async (productData) => {
     //     const product = productData[i];
     //     await ProductSqlite.create(product);
     // }
+    if (!productData.id) {
+        productData.ratingScore = 0;
+        productData.ratingCount = 0;
+    }
+
     return await ProductSqlite.create(productData);
 };
 

@@ -9,8 +9,8 @@ export const ProductSqlite = sequelize.define('Product', {
     price: { type: DataTypes.DECIMAL(10, 2), allowNull: false },
     category: { type: DataTypes.STRING, allowNull: false },
     quantity: { type: DataTypes.INTEGER, allowNull: false },
-    ratingScore: { type: DataTypes.INTEGER, allowNull: false },
-    ratingCount: { type: DataTypes.INTEGER, allowNull: false },
+    ratingScore: { type: DataTypes.INTEGER, defaultValue: 0 },
+    ratingCount: { type: DataTypes.INTEGER, defaultValue: 0 },
 });
 
 ProductSqlite.sync({ alter: true })
