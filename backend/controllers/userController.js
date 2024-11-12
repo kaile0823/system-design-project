@@ -1,7 +1,5 @@
 
-import { UserSqlite } from '../models/userSqliteModel.js';
-
-import { addUserSqlite, getUsersSqlite, updateUserSqlite, checkDuplicateSqlite } from '../services/userService.js';
+import { addUserSqlite, getUserSqlite, updateUserSqlite, deleteUserSqlite, checkDuplicateSqlite } from '../services/userService.js';
 import { validateEmail } from '../utils/emailValidation.js';
 
 // Adding a new user with duplicate and email validation
@@ -26,7 +24,7 @@ export const addUser = async (req, res) => {
 
 // Getting all users based on database type
 export const getUsers = async (req, res) => {
-  const users = await getUsersSqlite();
+  const users = await getUserSqlite();
   res.json(users);
 };
 
@@ -47,4 +45,11 @@ export const updateUser = async (req, res) => {
   }
 
   res.json(updatedUser);
+};
+
+// Deleting a user
+export const deleteUser = async (req, res) => {
+  const { id } = req.params;
+  await deleteUserSqlite(id);
+  res.sendStatus(204);
 };

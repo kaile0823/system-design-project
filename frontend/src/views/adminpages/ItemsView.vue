@@ -8,9 +8,6 @@ import { ProductService } from '@/service/ProductService';
 import Button from 'primevue/button';
 import InputText from 'primevue/inputtext';
 import InputNumber from 'primevue/inputnumber';
-import Dropdown from 'primevue/dropdown';
-import RadioButton from 'primevue/radiobutton';
-import Checkbox from 'primevue/checkbox';
 import Dialog from 'primevue/dialog';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
@@ -27,6 +24,8 @@ import SelectButton from 'primevue/selectbutton';
 import Card from 'primevue/card';
 import { Toast } from 'primevue';
 
+import axios from 'axios';
+
 // Initialization
 
 const toast = useToast();
@@ -42,12 +41,43 @@ const filters = ref({
 });
 const submitted = ref(false);
 
-
 // Server Functions
 
-onMounted(() => {
-    ProductService.getProducts().then((data) => (products.value = data));
-});
+// async fetchProducts() {
+//         const response = await axios.get('/api/products');
+//         this.products = response.data;
+//       },
+//       async createProduct() {
+//         await axios.post('/api/products', this.newProduct);
+//         this.newProduct = { name: '', price: '' };
+//         this.fetchProducts();
+//       },
+//       async editProduct(product) {
+//         const updatedProduct = prompt("Enter new name and price", `${product.name}, ${product.price}`);
+//         const [name, price] = updatedProduct.split(", ");
+//         await axios.put(`/api/products/${product.id}`, { name, price });
+//         this.fetchProducts();
+//       },
+//       async deleteProduct(id) {
+//         await axios.delete(`/api/products/${id}`);
+//         this.fetchProducts();
+//       }
+
+// Fetch products from server
+const fetchProducts = async () => {
+  try {
+    const response = await axios.get('http://localhost:3002/api/products');
+    if (response && response.data) {
+      products.value = response.data;
+    } else {
+      console.error('No data received from the API');
+    }
+  } catch (error) {
+    console.error("Client can't get Products: ", error);
+  }
+};
+
+onMounted(fetchProducts);
 
 // Update based on server
 const statuses = ref([
@@ -57,12 +87,23 @@ const statuses = ref([
     { label: 'Fitness', value: 'Fitness' },
 ]);
 
-// To push to server
-const addProduct = () => {
+// Create product and push to server
+const addProduct = async () => {
     products.value.push(product.value);
+    console.log(product.value);
+    try{
+        const response = await axios.post('http://localhost:3002/api/products', product.value);
+        if (response && response.data) {
+            // products.value.push(response.data);
+           console.log(response.data);
+           console.log(product.value);
+        }
+    } catch (error) {
+        console.error("Client can't add Products: ", error);
+    }
 }
 
-// Create product
+// Get new id
 const createId = () => {
     let id = '';
     var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -214,7 +255,7 @@ const getInventoryStatus = (quantity) => {
 }
 
 const countRating = (data) => {
-    return Math.round(data.rating / data.ratingCount)
+    return Math.round(data.ratingScore / data.ratingCount)
 }
 
 const size = ref({ label: 'Normal', value: 'null' });
@@ -269,7 +310,7 @@ const sizeOptions = ref([
                 <Column field="name" header="Name" sortable style="min-width: 10rem"></Column>
                 <Column header="Image">
                     <template #body="slotProps">
-                        <img :src="`https://primefaces.org/cdn/primevue/images/product/${slotProps.data.image}`"
+                        <img :src="`https://primefaces.org/cdn/primevue/images/product/${slotProps.data.images}`"
                             :alt="slotProps.data.image" class="rounded" style="width: 64px" />
                     </template>
                 </Column>

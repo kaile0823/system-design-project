@@ -1,8 +1,14 @@
-POST http://localhost:3001/api/users HTTP/1.1
+GET http://localhost:3002/api/products HTTP/1.1
 content-type: application/json
 
-{
-  "name": "Wilson",
-  "email": "wilson@gmail.com",
-  "password": "securepassword"
-}
+# {
+#   "id": "1000",
+#   "name": "Bamboo Watch",
+#   "description": "Product Description",
+#   "images": ["bamboo-watch.jpg"],
+#   "price": 65.00,
+#   "category": "Accessories",
+#   "quantity": 24,
+#   "ratingScore": 5,
+#   "ratingCount": 2
+# }

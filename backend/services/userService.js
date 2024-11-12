@@ -19,7 +19,7 @@ export const updateUserSqlite = async (id, userData) => {
 // GETTING
 
 // Getting all users from SQLite
-export const getUsersSqlite = async () => {
+export const getUserSqlite = async () => {
   return await UserSqlite.findAll();
 };
 
@@ -32,4 +32,11 @@ export const checkDuplicateSqlite = async (name, email) => {
   const userByName = await UserSqlite.findOne({ where: { name } });
   const userByEmail = await UserSqlite.findOne({ where: { email } });
   return userByName || userByEmail;
+};
+
+// DELETING
+
+// Deleting a user by ID from SQLite
+export const deleteUserSqlite = async (id) => {
+  return await UserSqlite.destroy({ where: { id } });
 };
