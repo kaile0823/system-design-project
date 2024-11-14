@@ -144,6 +144,19 @@ const deleteSelectedProducts = async () => {
 
 };
 
+// Image Operation
+
+const files = ref([]);
+
+const onImageUpload = () => {
+    toast.add({ severity: 'info', summary: 'Success', detail: 'File Uploaded', life: 3000 });
+};
+
+const onImageSelect = (event) => {
+    files.value = event.files;
+    files.value.pop();
+    console.log(files.value);
+};
 
 // Dialog Operations
 
@@ -349,13 +362,18 @@ const sizeOptions = ref([
         <Dialog v-model:visible="productDialog" :style="{ width: '80%' }" header="Product Details" :modal="true">
             <div class="grid mt-3">
                 <div class="md:col-6 sm:col-12 col-12">
-                    <div class="flex align-items-center justify-content-center">
-                        <img v-if="product.image"
-                            :src="`https://primefaces.org/cdn/primevue/images/product/${product.image}`"
-                            :alt="product.image" style="max-width: 100%" />
-                        <div v-else>
-                            <!-- ## TODO image picker -->
-                        </div>
+                    <img v-if="product.image"
+                        :src="`https://primefaces.org/cdn/primevue/images/product/${product.image}`"
+                        :alt="product.image" style="max-width: 100%" />
+                    <div v-else>
+                        <!-- ## TODO image picker -->
+                        <FileUpload name="demo[]" @upload="onImageUpload($event)" :multiple="true" accept="image/*"
+                            :maxFileSize="10485760" @select="onImageSelect">
+                            <template #content="{ files }"></template>
+                            <template #empty>
+                                <span>Drag and drop files to here to upload.</span>
+                            </template>
+                        </FileUpload>
                     </div>
                 </div>
                 <div class="md:col-6 sm:col-12 col-12">

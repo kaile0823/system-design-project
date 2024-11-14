@@ -19,6 +19,7 @@ connectSqlite();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
+app.use("/img", express.static('img'));
 
 // Routes
 app.use('/api', userRoutes);

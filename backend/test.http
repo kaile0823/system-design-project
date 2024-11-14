@@ -1,5 +1,6 @@
-POST http://localhost:3002/api/products HTTP/1.1
-content-type: application/json
+GET http://localhost:3002/img/image.png HTTP/1.1
+# content-type: application/json
+content-type: image/png
 
 # {
 #   "name": "Bamboo Watch",
@@ -10,4 +11,4 @@ content-type: application/json
 #   "quantity": 24,
 # }
 
-{"name":"12","description":"12","price":12,"quantity":12,"category":"Accessories"}
+# {"name":"12","description":"12","price":12,"quantity":12,"category":"Accessories"}
