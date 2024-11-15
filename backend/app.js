@@ -7,7 +7,8 @@ import { connectSqlite } from './config/dbSqlite.js';
 
 import userRoutes from './routes/userRoutes.js';
 import productRoutes from './routes/productRoutes.js';
-import settingsRoutes from './routes/settingRoutes.js';
+import settingRoutes from './routes/settingRoutes.js';
+import imageRoutes from './routes/imageRoutes.js';
 
 const app = express();
 
@@ -24,6 +25,7 @@ app.use("/img", express.static('img'));
 // Routes
 app.use('/api', userRoutes);
 app.use('/api', productRoutes);
-app.use('/api', settingsRoutes);
+app.use('/api', settingRoutes);
+app.use('/api', imageRoutes);
 
 export default app;

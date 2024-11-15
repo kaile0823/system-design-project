@@ -1,14 +1,11 @@
-GET http://localhost:3002/img/image.png HTTP/1.1
+GET http://localhost:3002/api/images?id=101 HTTP/1.1
 # content-type: application/json
-content-type: image/png
+# content-type: image/png
 
 # {
 #   "name": "Bamboo Watch",
-#   "description": "Product Description",
-#   "images": ["bamboo-watch.jpg"],
+#   "description": "Product Description",ß
 #   "price": 65.00,
 #   "category": "Accessories",
 #   "quantity": 24,
 # }
-
-# {"name":"12","description":"12","price":12,"quantity":12,"category":"Accessories"}

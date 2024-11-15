@@ -8,6 +8,4 @@ router.post('/products', addProduct);
 router.put('/products/:id', updateProduct);
 router.delete('/products/:id', deleteProduct);
 
-// Setting updating category function
-
 export default router;
