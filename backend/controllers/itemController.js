@@ -32,14 +32,16 @@ exports.getItem = async (req, res) => {
 
 // 添加商品到購物車
 exports.addCart = async (req, res) => {
-    const userId = req.user.id; // 假設用戶已通過中介軟體驗證
+    // 確保中介軟體已驗證並設置了 req.user
+    const userId = req.user.id; // 從中介軟體中取得使用者 ID
     const { itemId, quantity } = req.body; // 從請求中取得商品 ID 和數量
 
     try {
-        await Cart.create({ user_id: userId, item_id: itemId, quantity }); // 新增購物車資料
+        // 新增購物車資料
+        await Cart.create({ user_id: userId, item_id: itemId, quantity });
         res.status(201).json({ message: 'Item added to cart' });
     } catch (error) {
-        console.error("Error adding item to cart:", error);
+        console.error('Error adding item to cart:', error);
         res.status(500).json({ message: 'Error adding item to cart' });
     }
 };
