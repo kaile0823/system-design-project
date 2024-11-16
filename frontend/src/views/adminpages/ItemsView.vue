@@ -8,9 +8,6 @@ import { ProductService } from '@/service/ProductService';
 import Button from 'primevue/button';
 import InputText from 'primevue/inputtext';
 import InputNumber from 'primevue/inputnumber';
-import Dropdown from 'primevue/dropdown';
-import RadioButton from 'primevue/radiobutton';
-import Checkbox from 'primevue/checkbox';
 import Dialog from 'primevue/dialog';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
@@ -27,6 +24,8 @@ import SelectButton from 'primevue/selectbutton';
 import Card from 'primevue/card';
 import { Toast } from 'primevue';
 
+import axios from 'axios';
+
 // Initialization
 
 const toast = useToast();
@@ -42,12 +41,23 @@ const filters = ref({
 });
 const submitted = ref(false);
 
-
 // Server Functions
 
-onMounted(() => {
-    ProductService.getProducts().then((data) => (products.value = data));
-});
+// Fetch products from server
+const fetchProducts = async () => {
+    try {
+        const response = await axios.get('http://localhost:3002/api/products');
+        if (response && response.data) {
+            products.value = response.data;
+        } else {
+            console.error('No data received from the API');
+        }
+    } catch (error) {
+        console.error("Client can't get Products: ", error);
+    }
+};
+
+onMounted(fetchProducts);
 
 // Update based on server
 const statuses = ref([
@@ -57,80 +67,96 @@ const statuses = ref([
     { label: 'Fitness', value: 'Fitness' },
 ]);
 
-// To push to server
-const addProduct = () => {
-    products.value.push(product.value);
+// Create product and push to server
+const addProduct = async () => {
+
+    product.value.image = JSON.stringify(product.value.image);
+
+    try {
+        const response = await axios.post('http://localhost:3002/api/products', product.value);
+        if (response.status === 201 && response.data) {
+            products.value.push(response.data);
+            toast.add({ severity: 'success', summary: 'Successful', detail: 'Product Created', life: 3000 });
+        } else {
+            throw new Error('Failed to create product');
+        }
+    } catch (error) {
+        console.error("Client can't add Products: ", error);
+        toast.add({ severity: 'error', summary: 'Error', detail: 'Product Not Created', life: 3000 });
+    }
 }
 
-// Create product
-const createId = () => {
-    let id = '';
-    var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    for (var i = 0; i < 5; i++) {
-        id += chars.charAt(Math.floor(Math.random() * chars.length));
+// Update product
+const updateProduct = async () => {
+    try {
+        const id = product.value.id;
+        const response = await axios.put(`http://localhost:3002/api/products/${id}`, product.value);
+        if (response.status === 200) {
+            products.value[findIndexById(product.value.id)] = product.value;
+            toast.add({ severity: 'success', summary: 'Successful', detail: 'Product Updated', life: 3000 });
+        } else {
+            throw new Error('Failed to update product');
+        }
+    } catch (error) {
+        console.error("Client can't update Products: ", error);
+        toast.add({ severity: 'error', summary: 'Error', detail: 'Product Not Updated', life: 3000 });
     }
-    return id;
 }
-
-// Edit product
-
-const saveProduct = () => {
-
-    submitted.value = true;
-
-    if (!product?.value.name?.trim()) {
-        toast.add({ severity: 'error', summary: 'Warning', detail: 'Information incomplete', life: 3000 });
-        return;
-    };
-    if (!product?.value.description?.trim()) {
-        toast.add({ severity: 'error', summary: 'Warning', detail: 'Information incomplete', life: 3000 });
-        return;
-    };
-    if (!product?.value.price?.trim()) {
-        toast.add({ severity: 'error', summary: 'Warning', detail: 'Information incomplete', life: 3000 });
-        return;
-    };
-    if (!product?.value.quantity?.trim()) {
-        toast.add({ severity: 'error', summary: 'Warning', detail: 'Information incomplete', life: 3000 });
-        return;
-    };
-    if (!product?.value.category?.trim()) {
-        toast.add({ severity: 'error', summary: 'Warning', detail: 'Information incomplete', life: 3000 });
-        return;
-    };
-
-    if (product.value.id) {
-        products.value[findIndexById(product.value.id)] = product.value;
-        toast.add({ severity: 'success', summary: 'Successful', detail: 'Product Updated', life: 3000 });
-    }
-    else {
-        product.value.id = createId();
-        product.value.image = 'product-placeholder.svg';
-        addProduct();
-        toast.add({ severity: 'success', summary: 'Successful', detail: 'Product Created', life: 3000 });
-    }
-
-    productDialog.value = false;
-    product.value = {};
-};
 
 // Delete product
-const deleteProduct = () => {
-    products.value = products.value.filter(val => val.id !== product.value.id);
-    // ## To push to server
-    deleteProductDialog.value = false;
-    product.value = {};
-    toast.add({ severity: 'success', summary: 'Successful', detail: 'Product Deleted', life: 3000 });
+
+const deleteProduct = async () => {
+    try {
+        const id = product.value.id;
+        const response = await axios.delete(`http://localhost:3002/api/products/${id}`);
+        if (response.status === 204) {
+            products.value = products.value.filter(val => val.id !== product.value.id);
+            product.value = {};
+            toast.add({ severity: 'success', summary: 'Successful', detail: 'Product Deleted', life: 3000 });
+            deleteProductDialog.value = false;
+        } else {
+            throw new Error('Failed to delete product');
+        }
+    } catch (error) {
+        console.error("Client can't delete Products: ", error);
+        toast.add({ severity: 'error', summary: 'Error', detail: 'Product Not Deleted', life: 3000 });
+    }
+
 };
 
 // Delete productS
-const deleteSelectedProducts = () => {
+const deleteSelectedProducts = async () => {
+
+    for (const product of selectedProducts.value) {
+        try {
+            await axios.delete(`http://localhost:3002/api/products/${product.id}`);
+            console.log(`Deleted product with ID: ${product.id}`);
+        } catch (error) {
+            console.error(`Failed to delete product with ID: ${product.id}`, error);
+            selectedProducts.value = selectedProducts.value.filter(val => val.id !== product.id);
+            toast.add({ severity: 'error', summary: 'Error', detail: 'Product Not Deleted', life: 3000 });
+        }
+    }
     products.value = products.value.filter(val => !selectedProducts.value.includes(val));
     deleteProductsDialog.value = false;
     selectedProducts.value = null;
     toast.add({ severity: 'success', summary: 'Successful', detail: 'Products Deleted', life: 3000 });
+
 };
 
+// Image Operation
+
+const files = ref([]);
+
+const onImageUpload = () => {
+    toast.add({ severity: 'info', summary: 'Success', detail: 'File Uploaded', life: 3000 });
+};
+
+const onImageSelect = (event) => {
+    files.value = event.files;
+    files.value.pop();
+    console.log(files.value);
+};
 
 // Dialog Operations
 
@@ -154,6 +180,43 @@ const confirmDeleteProduct = (prod) => {
 
 const confirmDeleteSelected = () => {
     deleteProductsDialog.value = true;
+};
+
+const saveProduct = () => {
+
+    submitted.value = true;
+    product.value.category = product.value.category.label;
+
+    if (!product?.value.name?.trim()) {
+        toast.add({ severity: 'error', summary: 'Warning', detail: 'Information incomplete', life: 3000 });
+        return;
+    };
+    if (!product?.value.description?.trim()) {
+        toast.add({ severity: 'error', summary: 'Warning', detail: 'Information incomplete', life: 3000 });
+        return;
+    };
+    if (!product?.value.price) {
+        toast.add({ severity: 'error', summary: 'Warning', detail: 'Information incomplete', life: 3000 });
+        return;
+    };
+    if (!product?.value.quantity) {
+        toast.add({ severity: 'error', summary: 'Warning', detail: 'Information incomplete', life: 3000 });
+        return;
+    };
+    if (!product?.value.category?.trim()) {
+        toast.add({ severity: 'error', summary: 'Warning', detail: 'Information incomplete', life: 3000 });
+        return;
+    };
+
+    if (product.value.id) {
+        updateProduct();
+    }
+    else {
+        addProduct();
+    }
+
+    productDialog.value = false;
+    product.value = {};
 };
 
 
@@ -214,7 +277,10 @@ const getInventoryStatus = (quantity) => {
 }
 
 const countRating = (data) => {
-    return Math.round(data.rating / data.ratingCount)
+    if (data.ratingCount == 0) {
+        data.ratingCount = 1
+    }
+    return Math.round(data.ratingScore / data.ratingCount)
 }
 
 const size = ref({ label: 'Normal', value: 'null' });
@@ -269,7 +335,7 @@ const sizeOptions = ref([
                 <Column field="name" header="Name" sortable style="min-width: 10rem"></Column>
                 <Column header="Image">
                     <template #body="slotProps">
-                        <img :src="`https://primefaces.org/cdn/primevue/images/product/${slotProps.data.image}`"
+                        <img :src="`https://primefaces.org/cdn/primevue/images/product/${slotProps.data.images}`"
                             :alt="slotProps.data.image" class="rounded" style="width: 64px" />
                     </template>
                 </Column>
@@ -296,13 +362,18 @@ const sizeOptions = ref([
         <Dialog v-model:visible="productDialog" :style="{ width: '80%' }" header="Product Details" :modal="true">
             <div class="grid mt-3">
                 <div class="md:col-6 sm:col-12 col-12">
-                    <div class="flex align-items-center justify-content-center">
-                        <img v-if="product.image"
-                            :src="`https://primefaces.org/cdn/primevue/images/product/${product.image}`"
-                            :alt="product.image" style="max-width: 100%" />
-                        <div v-else>
-                            <!-- ## TODO image picker -->
-                        </div>
+                    <img v-if="product.image"
+                        :src="`https://primefaces.org/cdn/primevue/images/product/${product.image}`"
+                        :alt="product.image" style="max-width: 100%" />
+                    <div v-else>
+                        <!-- ## TODO image picker -->
+                        <FileUpload name="demo[]" @upload="onImageUpload($event)" :multiple="true" accept="image/*"
+                            :maxFileSize="10485760" @select="onImageSelect">
+                            <template #content="{ files }"></template>
+                            <template #empty>
+                                <span>Drag and drop files to here to upload.</span>
+                            </template>
+                        </FileUpload>
                     </div>
                 </div>
                 <div class="md:col-6 sm:col-12 col-12">

@@ -4,7 +4,8 @@ import { Sequelize }  from 'sequelize';
 
 export const sequelize = new Sequelize ({
     dialect: 'sqlite',
-    storage: './db/test1.sqlite'
+    storage: './db/test1.sqlite',
+    logging: false,
 })
 
 export const connectSqlite = async () => {
