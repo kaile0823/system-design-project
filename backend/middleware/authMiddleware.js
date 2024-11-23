@@ -1,7 +1,8 @@
 // backend/middleware/authMiddleware.js
-const jwt = require('jsonwebtoken');
 
-exports.authenticate = (req, res, next) => {
+import jwt from 'jsonwebtoken';
+
+export const authenticate = (req, res, next) => {
     const token = req.headers.authorization?.split(' ')[1]; // 取得 Authorization 標頭中的 JWT
     if (!token) {
         return res.status(401).json({ message: 'Unauthorized: No token provided' });
