@@ -57,7 +57,78 @@ const fetchProducts = async () => {
     }
 };
 
-onMounted(fetchProducts);
+const getImageLinks = async () => {
+    for (const prod of products.value) {
+        const id = prod.id
+        try {
+            const response = await axios.get('http://localhost:3002/api/images?id=' + id);
+            if (response && response.data) {
+                console.log(response.data);
+                console.log(response);
+            } else {
+                console.error('No data received from the API');
+            }
+        } catch (error) {
+            console.error("Client can't get image links: ", error);
+        }
+    }
+}
+
+// Developing Image
+const product1 = ref({});
+const getImage = async (img) => {
+    try {
+        const response = await axios.get(`https://primefaces.org/cdn/primevue/images/product/${img}`);
+        if (response.data) {
+            return response.data;
+        }
+    }
+    catch (error) {
+        console.error("Client can't get images: ", error);
+    }
+}
+// Push image to server
+const addImage = async () => {
+
+    try {
+        const response = await axios.post('http://localhost:3002/api/images', product.value);
+        if (response.status === 201 && response.data) {
+            products.value.push(response.data);
+        } else {
+            throw new Error('Failed to create product');
+        }
+    } catch (error) {
+        console.error("Client can't add Products: ", error);
+    }
+}
+
+const uploadImg = async (file) => {
+    const formData = new FormData();
+    formData.append("id", 10000);
+    formData.append("image", file);
+    try {
+        const response = await axios.post('http://localhost:3002/api/images', formData, {
+            headers: {
+                "Content-Type": "multipart/form-data",
+            },
+        });
+        console.log(response);
+    } catch (error) {
+        console.error("Client can't add images: ", error);
+    }
+}
+
+onMounted(async () => {
+    await fetchProducts();
+    // await getImageLinks();
+    const data = await ProductService.getProducts();
+    product1.value = data;
+
+    for (const objs of product1.value) {
+        const img = await getImage(objs.images);
+        uploadImg(img);
+    }
+});
 
 // Update based on server
 const statuses = ref([
@@ -146,17 +217,18 @@ const deleteSelectedProducts = async () => {
 
 // Image Operation
 
-const files = ref([]);
+const imageFiles = ref([]);
 
 const onImageUpload = () => {
     toast.add({ severity: 'info', summary: 'Success', detail: 'File Uploaded', life: 3000 });
 };
 
 const onImageSelect = (event) => {
-    files.value = event.files;
-    files.value.pop();
-    console.log(files.value);
+    imageFiles.value = event.imageFiles;
+    imageFiles.value.pop();
 };
+
+
 
 // Dialog Operations
 
@@ -369,7 +441,7 @@ const sizeOptions = ref([
                         <!-- ## TODO image picker -->
                         <FileUpload name="demo[]" @upload="onImageUpload($event)" :multiple="true" accept="image/*"
                             :maxFileSize="10485760" @select="onImageSelect">
-                            <template #content="{ files }"></template>
+                            <template #content="{ imageFiles }"></template>
                             <template #empty>
                                 <span>Drag and drop files to here to upload.</span>
                             </template>
