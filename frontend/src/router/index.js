@@ -8,6 +8,7 @@ import PrimeHomeView from '@/views/pages/HomeView.vue'
 import PrimeProductView from '@/views/pages/ProductView.vue'
 import PrimePostView from '@/views/pages/PostView.vue'
 import PrimeAdminView from '@/views/pages/AdminView.vue'
+import CartView from '@/views/pages/CartView.vue'
 
 import UsersView from '@/views/adminpages/UsersView.vue'
 import DatabaseView from '@/views/adminpages/ItemsView.vue'
@@ -25,6 +26,7 @@ const routes = [
       { path: '', component: PrimeHomeView },
       { path: 'product', component: PrimeProductView },
       { path: 'post', component: PrimePostView },
+      { path: 'cart', component: CartView },
       {
         path: 'admin', component: PrimeAdminView,
         children: [
@@ -37,7 +39,8 @@ const routes = [
         ]
       }
     ]
-  }
+  },
+
 ]
 
 const router = createRouter({

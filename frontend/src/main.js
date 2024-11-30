@@ -146,7 +146,7 @@ const MyPreset = definePreset(Aura, {
                         color: '{surface.300}'
                     }
                 }
-            }
+            },
         }
     }
 })

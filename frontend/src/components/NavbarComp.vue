@@ -35,7 +35,11 @@ function toggleDarkMode() {
                     </router-link>
                 </div>
                 <div class="flex align-items-center justify-content-evenly left-0 gap-5 ">
-                    <i class="pi pi-shopping-cart"></i>
+                     <router-link to="/main/cart">
+                        <a>
+                            <i class="pi pi-shopping-cart"></i>
+                        </a>
+                    </router-link>
                     <a @click="toggleDarkMode()">
                         <i v-if="dark" class="pi pi-sun"></i>
                         <i v-else class="pi pi-moon"></i>
