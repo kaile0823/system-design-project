@@ -5,25 +5,6 @@ import { FilterMatchMode } from '@primevue/core/api';
 import { useToast } from 'primevue/usetoast';
 import { ProductService } from '@/service/ProductService';
 
-import Button from 'primevue/button';
-import InputText from 'primevue/inputtext';
-import InputNumber from 'primevue/inputnumber';
-import Dialog from 'primevue/dialog';
-import DataTable from 'primevue/datatable';
-import Column from 'primevue/column';
-import ColumnGroup from 'primevue/columngroup';   // optional
-import Row from 'primevue/row';                   // optional
-import Select from 'primevue/select';
-import Textarea from 'primevue/textarea';
-import Tag from 'primevue/tag';
-import Rating from 'primevue/rating';
-import IconField from 'primevue/iconfield';
-import InputIcon from 'primevue/inputicon';
-import FileUpload from 'primevue/fileupload';
-import SelectButton from 'primevue/selectbutton';
-import Card from 'primevue/card';
-import { Toast } from 'primevue';
-
 import axios from 'axios';
 
 // Initialization

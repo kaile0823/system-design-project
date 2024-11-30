@@ -19,6 +19,8 @@
     "vue-router": "^4.4.5"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^5.1.4"
+    "@primevue/auto-import-resolver": "^4.2.4",
+    "@vitejs/plugin-vue": "^5.1.4",
+    "unplugin-vue-components": "^0.27.5"
   }
 }
