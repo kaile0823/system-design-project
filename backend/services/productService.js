@@ -1,5 +1,5 @@
 
-import { ProductSqlite } from '../models/productSqliteModel.js';
+import ProductSqlite from '../models/productSqliteModel.js';
 
 // ADDING
 

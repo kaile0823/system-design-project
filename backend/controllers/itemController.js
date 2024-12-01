@@ -47,7 +47,7 @@ const itemController = {
 
     // 獲取使用者的購物車資料
     getCart: async (req, res) => {
-        const userId = req.user.id; // 確定使用者 ID
+        const userId = 1; // 暂时硬编码为 1，用于测试
 
         try {
             const cartItems = await Cart.findAll({
