@@ -1,40 +1,36 @@
-
 import { ProductSqlite } from '../models/productSqliteModel.js';
+import { getImagesService } from '../services/imageService.js';
 
-// ADDING
+// Getting all Products from SQLite
+export const getProductsService = async () => {
+    const products = await ProductSqlite.findAll();
+
+    const productsWithImages = await Promise.all(
+        products.map(async product => {
+            const images = await getImagesService(product.id);
+            return { ...product.dataValues, images }; // Combine images with product data
+        })
+    );
+
+    return productsWithImages;
+}
 
 // Adding a new Product to SQLite
-export const addProductSqlite = async (productData) => {
-    // for (let i = 0; i < productData.length; i++) {
-    //     const product = productData[i];
-    //     await ProductSqlite.create(product);
-    // }
+export const addProductService = async (productData) => {
     if (!productData.id) {
         productData.ratingScore = 0;
         productData.ratingCount = 0;
     }
-
     return await ProductSqlite.create(productData);
 };
 
-// UPDATING
-
 // Updating a Product by ID in SQLite
-export const updateProductSqlite = async (id, productData) => {
+export const updateProductService = async (id, productData) => {
     const product = await ProductSqlite.update(productData, { where: { id } });
     return product;
 };
 
-// GETTING
-
-// Getting all Products from SQLite
-export const getProductSqlite = async () => {
-    return await ProductSqlite.findAll();
-};
-
-// DELETING
-
 // Deleting a Product by ID from SQLite
-export const deleteProductSqlite = async (id) => {
+export const deleteProductService = async (id) => {
     return await ProductSqlite.destroy({ where: { id } });
 };

@@ -17,22 +17,3 @@ export const connectSqlite = async () => {
       process.exit(1);
     }
   };
-
-// Define task model to make operation on SQLite using sequelize
-// async function setupDB() {
-//     try {
-//         db.Task = sequelize.define('Task', {
-//             text: {
-//                 type: DataTypes.STRING,
-//                 allowNull: false
-//             },
-//         });
-//         // Database initialization
-//         await sequelize.sync({ force: true });
-//         await db.Task.create({ text: "Item-1-MertKadirGursoy"});
-//         await db.Task.create({ text: "Item-2"});
-//         await db.Task.create({ text: "Item-3"});
-//     } catch (error) {
-//         console.error(error);
-//     }
-// }

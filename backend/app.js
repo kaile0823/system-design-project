@@ -1,5 +1,5 @@
-
 import express from 'express';
+// import https from 'https';
 import cors from 'cors';
 
 // import { connectMongoDB } from './config/dbMongo.js';
@@ -30,7 +30,7 @@ sequelize.sync({ force: false }) // 設置為 true 將重置資料表，開發�
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
-app.use("/img", express.static('img'));
+app.use("/img", express.static('img')); // Host static image folder
 
 // Routes
 app.use('/api', userRoutes);

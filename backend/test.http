@@ -1,5 +1,4 @@
-# GET http://localhost:3002/api/images?id=101 HTTP/1.1
-GET https://primefaces.org/cdn/primevue/images/product/bamboo-watch.jpg HTTP/1.1
+GET http://localhost:3002/api/images/0 HTTP/1.1
 # content-type: application/json
 # content-type: image/png
 

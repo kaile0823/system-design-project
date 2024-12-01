@@ -1,9 +1,5 @@
 <script setup>
 
-import Card from "primevue/card";
-import Toolbar from 'primevue/toolbar';
-import Button from 'primevue/button';
-
 </script>
 
 <template>
