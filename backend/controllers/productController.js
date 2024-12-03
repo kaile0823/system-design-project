@@ -1,5 +1,5 @@
 
-import { addProductService, getProductsService, updateProductService, deleteProductService } from '../services/productService.js';
+import { getProductsService, addProductService, updateProductService, deleteProductService } from '../services/productService.js';
 
 // Getting all Products
 export const getProductsController = async (req, res) => {

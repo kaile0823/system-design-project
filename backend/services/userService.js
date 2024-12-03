@@ -1,42 +1,44 @@
 
-import { UserSqlite } from '../models/userSqliteModel.js';
+import UserSqliteModel from '../models/userSqliteModel.js';
 
-// ADDING
-
-// Adding a new user to SQLite
-export const addUserSqlite = async (userData) => {
-  return await UserSqlite.create(userData);
-};
-
-// UPDATING
-
-// Updating a user by ID in SQLite
-export const updateUserSqlite = async (id, userData) => {
-  const user = await UserSqlite.findByPk(id);
-  return user ? await user.update(userData) : null;
-};
-
-// GETTING
-
-// Getting all users from SQLite
-export const getUserSqlite = async () => {
-  return await UserSqlite.findAll();
-};
-
-export const findUserByEmailSqlite = async (email) => {
-  return await UserSqlite.findOne({ where: { email } });
-};
+// UTILITIES SERVICES
 
 // Validation for duplicate email and name in SQLite
-export const checkDuplicateSqlite = async (name, email) => {
-  const userByName = await UserSqlite.findOne({ where: { name } });
-  const userByEmail = await UserSqlite.findOne({ where: { email } });
+export const checkDuplicateService = async (name, email) => {
+  const userByName = await UserSqliteModel.findOne({ where: { name } });
+  const userByEmail = await UserSqliteModel.findOne({ where: { email } });
+  
+  console.log(userByName, userByEmail);
+
   return userByName || userByEmail;
 };
+export const findUserByEmailService = async (email) => {
+  return await UserSqliteModel.findOne({ where: { email } });
+};
 
-// DELETING
+// API SERVICES
+
+// Getting all users from SQLite
+export const getUsersService = async () => {
+  return await UserSqliteModel.findAll();
+};
+
+// Getting a user by uname from SQLite
+export const getUserService = async (id) => {
+  return await UserSqliteModel.findByPk(id);
+};
+
+// Adding a new user to SQLite
+export const addUserService = async (userData) => {
+  return await UserSqliteModel.create(userData);
+};
+
+// Updating a user by ID in SQLite
+export const updateUserService = async (id, userData) => {
+  return await UserSqliteModel.update(userData, { where: { id } });
+};
 
 // Deleting a user by ID from SQLite
-export const deleteUserSqlite = async (id) => {
-  return await UserSqlite.destroy({ where: { id } });
+export const deleteUserService = async (id) => {
+  return await UserSqliteModel.destroy({ where: { id } });
 };

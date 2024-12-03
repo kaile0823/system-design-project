@@ -1,8 +1,8 @@
-// models/userSqliteModel.js
+
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../config/dbSqlite.js';
 
-export const ProductSqlite = sequelize.define('Product', {
+export const ProductSqliteModel = sequelize.define('Product', {
     name: { type: DataTypes.STRING, allowNull: false },
     description: { type: DataTypes.STRING, allowNull: false },
     price: { type: DataTypes.DECIMAL(10, 2), allowNull: false },
@@ -12,12 +12,4 @@ export const ProductSqlite = sequelize.define('Product', {
     ratingCount: { type: DataTypes.INTEGER, defaultValue: 0 },
 });
 
-ProductSqlite.sync({ alter: true })
-    .then(() => {
-        console.log('SQLite table (Users) synced successfully.');
-    })
-    .catch(error => {
-        console.error('Error syncing SQLite table:', error);
-    });
-
-export default ProductSqlite;
+export default ProductSqliteModel;

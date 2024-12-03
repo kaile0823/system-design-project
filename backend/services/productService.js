@@ -1,9 +1,9 @@
-import { ProductSqlite } from '../models/productSqliteModel.js';
+import { ProductSqliteModel } from '../models/productSqliteModel.js';
 import { getImagesService } from '../services/imageService.js';
 
 // Getting all Products from SQLite
 export const getProductsService = async () => {
-    const products = await ProductSqlite.findAll();
+    const products = await ProductSqliteModel.findAll();
 
     const productsWithImages = await Promise.all(
         products.map(async product => {
@@ -21,16 +21,16 @@ export const addProductService = async (productData) => {
         productData.ratingScore = 0;
         productData.ratingCount = 0;
     }
-    return await ProductSqlite.create(productData);
+    return await ProductSqliteModel.create(productData);
 };
 
 // Updating a Product by ID in SQLite
 export const updateProductService = async (id, productData) => {
-    const product = await ProductSqlite.update(productData, { where: { id } });
+    const product = await ProductSqliteModel.update(productData, { where: { id } });
     return product;
 };
 
 // Deleting a Product by ID from SQLite
 export const deleteProductService = async (id) => {
-    return await ProductSqlite.destroy({ where: { id } });
+    return await ProductSqliteModel.destroy({ where: { id } });
 };

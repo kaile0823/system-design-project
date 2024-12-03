@@ -1,7 +1,5 @@
 <script setup>
 
-import Card from 'primevue/card';
-
 import { ref } from 'vue';
 
 const dark = ref(false);
@@ -18,24 +16,24 @@ function toggleDarkMode() {
         <template #content>
             <div class="flex align-items-center">
                 <div class="flex-auto flex left-0 justify-content-evenly align-items-center">
-                    <router-link to="/main/dev">
+                    <router-link to="/dev">
                         <a>Developement Page</a>
                     </router-link>
-                    <router-link to="/main/">
+                    <router-link to="/">
                         <a>Home</a>
                     </router-link>
-                    <router-link to="/main/product">
+                    <router-link to="/product">
                         <a>Product</a>
                     </router-link>
-                    <router-link to="/main/post">
+                    <router-link to="/post">
                         <a>Post</a>
                     </router-link>
-                    <router-link to="/main/admin/users">
+                    <router-link to="/admin/users">
                         <a>Admin</a>
                     </router-link>
                 </div>
                 <div class="flex align-items-center justify-content-evenly left-0 gap-5 ">
-                     <router-link to="/main/cart">
+                     <router-link to="/cart">
                         <a>
                             <i class="pi pi-shopping-cart"></i>
                         </a>
@@ -44,7 +42,7 @@ function toggleDarkMode() {
                         <i v-if="dark" class="pi pi-sun"></i>
                         <i v-else class="pi pi-moon"></i>
                     </a>
-                    <router-link to="/">
+                    <router-link to="/user/login">
                         <a>
                             <i class="pi pi-user"></i>
                         </a>

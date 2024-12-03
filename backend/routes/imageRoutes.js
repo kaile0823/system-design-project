@@ -1,7 +1,5 @@
 import express from 'express';
-import { getImagesController } from '../controllers/imageController.js';
-import { uploadImageController } from '../controllers/imageController.js';
-import { deleteImagesController } from '../controllers/imageController.js';
+import { getImagesController, uploadImageController, deleteImagesController } from '../controllers/imageController.js';
 import { upload } from '../middleware/uploadImage.js';
 
 const router = express.Router();

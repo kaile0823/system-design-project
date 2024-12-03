@@ -1,44 +1,52 @@
 
-import { addUserSqlite, getUserSqlite, updateUserSqlite, deleteUserSqlite, checkDuplicateSqlite } from '../services/userService.js';
+import { checkDuplicateService, addUserService, getUsersService, getUserService, updateUserService, deleteUserService } from '../services/userService.js';
 import { validateEmail } from '../utils/emailValidation.js';
 
 // Adding a new user with duplicate and email validation
-export const addUser = async (req, res) => {
-  const { name, email, password } = req.body;
-  
+export const addUserController = async (req, res) => {
+
+  const { uname, email, password, address } = req.body;
   if (!validateEmail(email)) {
     return res.status(400).json({ msg: 'Invalid email format' });
   }
 
-  const checkDuplicate = await checkDuplicateSqlite(name, email);
-  
+  const checkDuplicate = await checkDuplicateService(uname, email);
   if (checkDuplicate) {
     return res.status(400).json({ msg: 'User with same name or email already exists' });
   }
 
-  const newUser = { name, email, password };
-  const createdUser = await addUserSqlite(newUser);
-  
+  const newUser = { uname, email, password, address };
+  const createdUser = await addUserService(newUser);
   res.status(201).json(createdUser);
 };
 
 // Getting all users based on database type
-export const getUsers = async (req, res) => {
-  const users = await getUserSqlite();
+export const getUsersController = async (req, res) => {
+  const users = await getUsersService();
   res.json(users);
 };
 
-// Updating a user with validation
-export const updateUser = async (req, res) => {
+// Getting a specific user
+export const getUserController = async (req, res) => {
   const { id } = req.params;
-  const { name, email, password } = req.body;
+  const user = await getUserService(id);
+  if (!user) {
+    return res.status(404).json({ msg: 'User not found' });
+  }
+  res.json(user);
+};
+
+// Updating a user with validation
+export const updateUserController = async (req, res) => {
+  const { id } = req.params;
+  const { uname, email, password, address } = req.body;
 
   if (!validateEmail(email)) {
     return res.status(400).json({ msg: 'Invalid email format' });
   }
 
-  const updatedUserData = { name, email, password };
-  const updatedUser = await updateUserSqlite(id, updatedUserData);
+  const updatedUserData = { uname, email, password, address };
+  const updatedUser = await updateUserService(id, updatedUserData);
 
   if (!updatedUser) {
     return res.status(404).json({ msg: 'User not found' });
@@ -48,8 +56,8 @@ export const updateUser = async (req, res) => {
 };
 
 // Deleting a user
-export const deleteUser = async (req, res) => {
+export const deleteUserController = async (req, res) => {
   const { id } = req.params;
-  await deleteUserSqlite(id);
+  await deleteUserService(id);
   res.sendStatus(204);
 };
