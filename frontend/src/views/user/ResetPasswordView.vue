@@ -2,12 +2,14 @@
 
 import { ref } from "vue";
 import { useRouter } from 'vue-router';
+import { useGlobalStore } from '@/store/useGlobalStore';
 import { useToast } from "primevue/usetoast";
 import { zodResolver } from '@primevue/forms/resolvers/zod';
 import { z } from 'zod';
 import axios from 'axios';
 
 const router = useRouter();
+const store = useGlobalStore();
 const toast = useToast();
 const initialValues = ref({
     password: '',
@@ -15,7 +17,8 @@ const initialValues = ref({
 });
 const password = ref('');
 const passwordConfirm = ref('');
-const success = ref(false);
+const cond1 = ref(true);
+const cond2 = ref(true);
 
 const resolver = ref(zodResolver(
     z.object({
@@ -28,33 +31,53 @@ const resolver = ref(zodResolver(
             .refine((value) => /[A-Z]/.test(value), {
                 message: 'Must have an uppercase letter.'
             })
-            .refine((value) => /d/.test(value), {
+            .refine((value) => /[0-9]/.test(value), {
                 message: 'Must have a number.'
+            })
+            .refine((value) => {
+                if (value) {
+                    cond1.value = false;
+                    return true
+                } else {
+                    cond1.value = true;
+                    return false
+                }
             }),
-        passwordConfirm: z.string(),
-    }).superRefine(async (data, ctx) => {
-
-        if (data.password !== data.confirmPassword) {
+        passwordConfirm: z.string()
+    }).superRefine((data, ctx) => {
+        if (data.password !== data.passwordConfirm) {
+            cond2.value = true;
             ctx.addIssue({
-                path: ["confirmPassword"],
-                message: "Passwords do not match.",
+                path: ['passwordConfirm'],
+                message: 'Passwords do not match.',
             });
         }
-
-        // Reset password result from server
-        const response = await axios.post('http://localhost:3002/api/users/reset-password', {
-            password: data.password });
-
-        if (response.status === 200) {
-            success.value = true
+        else {
+            cond2.value = false;
         }
     })
 ));
 
+const submit = async () => {
+    try {
+        const resetData = {
+            email: store.getEmail,
+            password: password.value
+        }
+        // Reset password result from server
+        const response = await axios.post('http://localhost:3002/api/users/reset-password', resetData);
+        if (response.status === 200) {
+            toast.add({ severity: 'success', summary: 'Successful', detail: 'Password Changed', life: 3000 });
+            router.push('/user/login');
+        }
+    } catch (error) {
+        console.error("Client can't reset password: ", error);
+    }
+}
+
 const onFormSubmit = async ({ valid }) => {
-    if (valid && success.value) {
-        toast.add({ severity: 'success', summary: 'Successful', detail: 'Password Changed', life: 3000 });
-        router.push('/user/login');
+    if (valid) {
+        toast.add({ severity: 'success', summary: 'Form is submitted.', life: 3000 });
     }
 };
 
@@ -74,23 +97,35 @@ const onFormSubmit = async ({ valid }) => {
                     <template #content>
                         <div class="flex flex-column justify-content-center " style="min-height: 40vh">
                             <Form v-slot="$form" :resolver="resolver" :initialValues="initialValues"
-                                :validateOnSubmit="true" @submit="onFormSubmit"
+                                :validateOnValueUpdate="true" @submit="onFormSubmit"
                                 class="flex flex-column justify-content-center gap-4">
                                 <Password v-model="password" name="password" type="text" placeholder="Password"
-                                    :feedback="false" fluid />
+                                    toggleMask fluid>
+                                    <template #header>
+                                        <div class="font-semibold text-xm mb-4">Pick a password</div>
+                                    </template>
+                                    <template #footer>
+                                        <Divider />
+                                        <Message v-if="$form.password?.invalid"
+                                            v-for="(error, index) of $form.password.errors" :key="index"
+                                            severity="error" size="small" variant="simple">{{ error.message }}</Message>
+                                    </template>
+                                </Password>
                                 <Message v-if="$form.password?.invalid" severity="error" size="small" variant="simple">
-                                    {{$form.password.error?.message }}</Message>
-                                <Password v-model="passwordConfirm" name="passwordConfirm" type="text" placeholder="Confirm Password"
-                                    :feedback="false" fluid />
-                                <Message v-if="$form.passwordConfirm?.invalid" severity="error" size="small" variant="simple">
-                                    {{$form.passwordConfirm.error?.message }}</Message>
+                                    {{ $form.password.error?.message }}</Message>
+
+                                <Password v-model="passwordConfirm" name="passwordConfirm" type="text"
+                                    placeholder="Confirm Password" :feedback="false" toggleMask fluid />
+                                <Message v-if="$form.passwordConfirm?.invalid" severity="error" size="small"
+                                    variant="simple">
+                                    {{ $form.passwordConfirm.error?.message }}</Message>
                                 <div class="flex justify-content-center">
-                                    <Button class="w-3" type="submit" severity="primary" label="Reset Password" />
+                                    <Button class=" w-3" type="submit" severity="primary" label="Reset Password"
+                                        :disabled="cond1 || cond2" @click="submit" disabled />
                                 </div>
                             </Form>
                         </div>
                         <Toast />
-
                     </template>
                 </Card>
             </div>

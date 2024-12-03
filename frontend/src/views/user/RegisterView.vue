@@ -6,24 +6,81 @@ import { useToast } from "primevue/usetoast";
 import { z } from 'zod';
 import { CountryService } from "@/service/CountryService";
 
+const toast = useToast();
+const initialValues = ref({
+    country: { name: '' },
+    email: '',
+    password: '',
+    uname: ''
+});
+const uname = ref(null);
+const password = ref(null);
+const passwordConfirm = ref('');
+const cond1 = ref(true);
+const cond2 = ref(true);
+const selectedCity = ref();
+const countries = ref();
+const filteredCountries = ref();
+const cities = ref([
+    { name: 'New York', code: 'NY' },
+    { name: 'Rome', code: 'RM' },
+    { name: 'London', code: 'LDN' },
+    { name: 'Istanbul', code: 'IST' },
+    { name: 'Paris', code: 'PRS' }
+]);
+
 onMounted(() => {
     CountryService.getCountries().then((data) => (countries.value = data));
 });
 
-const initialValues = ref({
-    country: { name: '' }
-});
+
+// const resolver = ref(zodResolver(
+//     z.object({
+//         password: z.string()
+//             .min(6, { message: 'Minimum 6 characters.' })
+//             .max(20, { message: 'Maximum 20 characters.' })
+//             .refine((value) => /[a-z]/.test(value), {
+//                 message: 'Must have a lowercase letter.'
+//             })
+//             .refine((value) => /[A-Z]/.test(value), {
+//                 message: 'Must have an uppercase letter.'
+//             })
+//             .refine((value) => /[0-9]/.test(value), {
+//                 message: 'Must have a number.'
+//             })
+//             .refine((value) => {
+//                 if (value) {
+//                     cond1.value = false;
+//                     return true
+//                 } else {
+//                     cond1.value = true;
+//                     return false
+//                 }
+//             }),
+//         passwordConfirm: z.string()
+//     }).superRefine((data, ctx) => {
+//         if (data.password !== data.passwordConfirm) {
+//             cond2.value = true;
+//             ctx.addIssue({
+//                 path: ['passwordConfirm'],
+//                 message: 'Passwords do not match.',
+//             });
+//         }
+//         else {
+//             cond2.value = false;
+//         }
+//     })
+// ));
+
 const resolver = ref(zodResolver(
     z.object({
-        country: z.union([
-            z.object({
-                name: z.string().min(1, 'Country is required.')
-            }),
-            z.any().refine((val) => false, { message: 'Country is required.' })
-        ]),
+        uname: z.string()
+            .min(3, { message: 'Minimum 3 characters.' }),
+        email: z.string()
+            .email('Invalid email'),
         password: z
             .string()
-            .min(4, { message: 'Minimum 4 characters.' })
+            .min(6, { message: 'Minimum 6 characters.' })
             .max(20, { message: 'Maximum 20 characters.' })
             .refine((value) => /[a-z]/.test(value), {
                 message: 'Must have a lowercase letter.'
@@ -31,17 +88,26 @@ const resolver = ref(zodResolver(
             .refine((value) => /[A-Z]/.test(value), {
                 message: 'Must have an uppercase letter.'
             })
-            .refine((value) => /d/.test(value), {
+            .refine((value) => /[0-9]/.test(value), {
                 message: 'Must have a number.'
-            })
+            }),
+        country: z.union([
+            z.object({
+                name: z.string().min(1, 'Country is required.')
+            }),
+            z.any().refine((val) => false, { message: 'Country is required.' })
+        ]),
+    }).superRefine(async (values, ctx) => {
+
+        // if (values) {
+        //     ctx.addIssue({
+        //         path: ['password'],
+        //         message: 'Password is incorrect',
+        //     });
+        // }
+
     })
 ));
-
-
-const countries = ref();
-// const selectedCountry = ref();
-const filteredCountries = ref();
-const toast = useToast();
 
 const searchCountries = (event) => {
     setTimeout(() => {
@@ -56,25 +122,10 @@ const searchCountries = (event) => {
 };
 
 const onFormSubmit = ({ valid }) => {
-
-    console.log(initialValues.value);
     if (valid) {
-        toast.add({ severity: 'success', summary: 'Form is submitted.', life: 3000 });
+        toast.add({ severity: 'success', summary: 'Registered Successfully.', life: 3000 });
     }
 };
-
-
-const text1 = ref(null);
-const text2 = ref(null);
-const number = ref(null);
-const selectedCity = ref();
-const cities = ref([
-    { name: 'New York', code: 'NY' },
-    { name: 'Rome', code: 'RM' },
-    { name: 'London', code: 'LDN' },
-    { name: 'Istanbul', code: 'IST' },
-    { name: 'Paris', code: 'PRS' }
-]);
 
 </script>
 
@@ -89,23 +140,51 @@ const cities = ref([
                         <h1 class="text-center">Register</h1>
                     </template>
                     <template #content>
-                        <div class="card grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <Form v-slot="$form" :resolver="resolver" :initialValues="initialValues"
+                            :validateOnValueUpdate="true" @submit="onFormSubmit" class="flex flex-column gap-4 px-6">
                             <InputGroup>
                                 <InputGroupAddon>
                                     <i class="pi pi-user"></i>
                                 </InputGroupAddon>
-                                <InputText v-model="text1" placeholder="Username" />
+                                <InputText v-model="uname" placeholder="Username" />
                             </InputGroup>
 
                             <InputGroup>
-                                <InputGroupAddon>$</InputGroupAddon>
-                                <InputNumber v-model="number" placeholder="Price" />
-                                <InputGroupAddon>.00</InputGroupAddon>
+                                <InputGroupAddon>
+                                    <i class="pi pi-envelope"></i>
+                                </InputGroupAddon>
+                                <InputNumber v-model="email" placeholder="Email" />
                             </InputGroup>
 
                             <InputGroup>
-                                <InputGroupAddon>www</InputGroupAddon>
-                                <InputText v-model="text2" placeholder="Website" />
+                                <InputGroupAddon>
+                                    <i class="pi pi-key"></i>
+                                </InputGroupAddon>
+                                <Password v-model="password" name="password" type="text" placeholder="Password"
+                                    toggleMask fluid>
+                                    <template #header>
+                                        <div class="font-semibold text-xm mb-4">Pick a password</div>
+                                    </template>
+                                    <template #footer>
+                                        <Divider />
+                                        <Message v-if="$form.password?.invalid"
+                                            v-for="(error, index) of $form.password.errors" :key="index"
+                                            severity="error" size="small" variant="simple">{{ error.message }}</Message>
+                                    </template>
+                                </Password>
+                                <Message v-if="$form.password?.invalid" severity="error" size="small" variant="simple">
+                                    {{ $form.password.error?.message }}</Message>
+                            </InputGroup>
+
+                            <InputGroup>
+                                <InputGroupAddon>
+                                    <i class="pi pi-key"></i>
+                                </InputGroupAddon>
+                                <Password v-model="passwordConfirm" name="passwordConfirm" type="text"
+                                    placeholder="Confirm Password" :feedback="false" toggleMask fluid />
+                                <Message v-if="$form.passwordConfirm?.invalid" severity="error" size="small"
+                                    variant="simple">
+                                    {{ $form.passwordConfirm.error?.message }}</Message>
                             </InputGroup>
 
                             <InputGroup>
@@ -115,57 +194,25 @@ const cities = ref([
                                 <Select v-model="selectedCity" :options="cities" optionLabel="name"
                                     placeholder="City" />
                             </InputGroup>
-                        </div>
 
-                        <Form v-slot="$form" :resolver="resolver" :initialValues="initialValues" @submit="onFormSubmit"
-                            class="flex justify-content-center flex-column gap-4 w-full">
-
-                            <!-- <InputText name="username" type="text" placeholder="Username" fluid />
-                            <Message v-if="$form.country?.invalid" severity="error" size="small" variant="simple">{{
-                                $form.country.error?.message }}</Message>
-
-                            <InputText name="email" type="text" placeholder="Email" fluid />
-                            <Message v-if="$form.email?.invalid" severity="error" size="small" variant="simple">{{
-                                $form.country.error?.message }}</Message> -->
-
-                            <Password name="password" type="text" placeholder="Password" :formControl="{ validateOnValueUpdate: true }" toggleMask fluid>
-                                <template #header>
-                                    <div class="font-semibold text-xm mb-4">Pick a password</div>
-                                </template>
-                                <template #footer>
-                                    <Divider />
-                                    <Message v-if="$form.password?.invalid"
-                                        v-for="(error, index) of $form.password.errors" :key="index" severity="error"
-                                        size="small" variant="simple">{{ error.message }}</Message>
-                                </template>
-                            </Password>
-
-                            <AutoComplete name="country" optionLabel="country" placeholder="Country"
-                                :suggestions="filteredCountries" @complete="searchCountries" fluid />
-                            <Message v-if="$form.country?.invalid" severity="error" size="small" variant="simple">{{
-                                $form.country.error?.message }}</Message>
-
-                            <!-- <AutoComplete name="location" optionLabel="location" placeholder="Location"
-                                :suggestions="filteredLocation" @complete="searchLocation" fluid />
-                            <Message v-if="$form.location?.invalid" severity="error" size="small" variant="simple">{{
-                                $form.country.error?.message }}</Message>
-
-                            <AutoComplete name="city" optionLabel="city" placeholder="City" :suggestions="filteredCity"
-                                @complete="searchCity" fluid />
-                            <Message v-if="$form.country?.invalid" severity="error" size="small" variant="simple">{{
-                                $form.country.error?.message }}</Message> -->
+                            <InputGroup>
+                                <InputGroupAddon>
+                                    <i class="pi pi-map"></i>
+                                </InputGroupAddon>
+                                <AutoComplete name="country" optionLabel="country" placeholder="Country"
+                                    :suggestions="filteredCountries" @complete="searchCountries" fluid />
+                                <Message v-if="$form.country?.invalid" severity="error" size="small" variant="simple">{{
+                                    $form.country.error?.message }}</Message>
+                            </InputGroup>
 
                             <div class="flex justify-content-center">
-                                <Button class="w-3" type="submit" severity="primary" label="Submit" />
+                                <Button class="w-3" type="submit" severity="primary" label="Register" />
                             </div>
-
                         </Form>
                         <Toast />
-
                     </template>
                 </Card>
             </div>
         </div>
     </div>
-
 </template>

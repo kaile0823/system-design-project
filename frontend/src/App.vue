@@ -17,16 +17,3 @@ axios.defaults.headers.post['Content-Type'] = 'application/json';
     </router-view>
   </main>
 </template>
-
-<style>
-/* Add transition effect */
-.fade-enter-active,
-.fade-leave-active {
-  transition: transform 0.5s ease;
-}
-
-.fade-enter,
-.fade-leave-to {
-  transform: translateX(100%);
-}
-</style>

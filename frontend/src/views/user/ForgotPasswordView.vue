@@ -2,11 +2,13 @@
 
 import { ref } from "vue";
 import { useRouter } from 'vue-router';
+import { useGlobalStore } from '@/store/useGlobalStore';
 import { zodResolver } from '@primevue/forms/resolvers/zod';
 import { z } from 'zod';
 import axios from 'axios';
 
 const router = useRouter();
+const store = useGlobalStore();
 const initialValues = ref({
     email: ''
 });
@@ -14,23 +16,22 @@ const email = ref('');
 
 const resolver = ref(zodResolver(
     z.object({
-        email: z.string().email('Invalid email')
-            .refine(async (val = '') => {
+        email: z.string()
+            .email({ message: "Invalid email address." })
+            .refine(async (val) => {
                 const data = {
-                    email: val.email,
+                    email: val,
                     password: ''
                 }
-                // Check email from server
                 const response = await axios.post('http://localhost:3002/api/users/login', data);
-                if (!response.data.isEmailValid) {
-                    return true
-                }
+                return response.data.isEmailValid
             }, { message: 'Email does not exist' }),
     })
 ));
 
 const onFormSubmit = async ({ valid }) => {
     if (valid) {
+        store.setEmail(email.value);
         router.push('/user/reset-password');
     }
 };
@@ -51,7 +52,7 @@ const onFormSubmit = async ({ valid }) => {
                     <template #content>
                         <div class="flex flex-column justify-content-between " style="min-height: 40vh">
                             <Form v-slot="$form" :resolver="resolver" :initialValues="initialValues"
-                                :validateOnSubmit="true" @submit="onFormSubmit"
+                                :validateOnValueUpdate="false" @submit="onFormSubmit"
                                 class="flex flex-column justify-content-center gap-4" style="min-height: 40vh">
                                 <InputText v-model="email" name="email" type="text" placeholder="Email" fluid />
                                 <Message v-if="$form.email?.invalid" severity="error" size="small" variant="simple">{{

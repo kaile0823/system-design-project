@@ -18,7 +18,8 @@ const password = ref('');
 
 const resolver = ref(zodResolver(
   z.object({
-    email: z.string().email('Invalid email'),
+    email: z.string()
+      .email('Invalid email'),
     password: z.string(),
   }).superRefine(async (values, ctx) => {
     const loginData = {
@@ -88,7 +89,7 @@ const onFormSubmit = async ({ valid }) => {
           <template #content>
             <div class="flex flex-column justify-content-between " style="min-height: 40vh">
 
-              <Form v-slot="$form" :resolver="resolver" :initialValues="initialValues" :validateOnSubmit="true"
+              <Form v-slot="$form" :resolver="resolver" :initialValues="initialValues" :validateOnValueUpdate="false"
                 @submit="onFormSubmit" class="flex flex-column justify-content-center gap-4 w-full">
 
                 <InputText v-model="email" name="email" type="text" placeholder="Email" fluid />

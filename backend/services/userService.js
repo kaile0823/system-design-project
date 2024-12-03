@@ -66,12 +66,17 @@ export const loginService = async (email, password) => {
   }
 }
 
-export const resetPasswordService = async (password) => {
+export const resetPasswordService = async (email, password) => {
   try {
-    await UserSqliteModel.update({ password }, { where: { id: 1 } });
-    return true; // Password reset successfully
+    const user = await UserSqliteModel.findOne({ where: { email } });
+    if (!user) {
+      return false;
+    }
+    user.password = password;
+    await user.save();
+    return true
   } catch (error) {
     console.error('Error during password reset:', error);
-    return false; // Password reset failed
+    return false;
   }
 }

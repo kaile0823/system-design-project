@@ -72,11 +72,11 @@ export const loginController = async (req, res) => {
 }
 
 export const resetPasswordController = async (req, res) => {
-  const { password } = req.body;
-  const result = await resetPasswordService(password);
+  const { email, password } = req.body;
+  const result = await resetPasswordService(email, password);
   if (result) {
-    res.status(200); // Reset password successfully
+    res.sendStatus(200); // Reset password successfully
   } else {
-    res.status(400); // Reset password failed
+    res.sendStatus(400); // Reset password failed
   }
 }
