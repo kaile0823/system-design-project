@@ -1,5 +1,5 @@
 
-import { checkDuplicateService, addUserService, getUsersService, getUserService, updateUserService, deleteUserService } from '../services/userService.js';
+import { checkDuplicateService, addUserService, getUsersService, getUserService, updateUserService, deleteUserService, loginService, resetPasswordService } from '../services/userService.js';
 import { validateEmail } from '../utils/emailValidation.js';
 
 // Adding a new user with duplicate and email validation
@@ -61,3 +61,22 @@ export const deleteUserController = async (req, res) => {
   await deleteUserService(id);
   res.sendStatus(204);
 };
+
+
+// User login
+export const loginController = async (req, res) => {
+  const { email, password } = req.body;
+  const result = await loginService(email, password);
+  // On whatever condition, result will send the status of login to the frontend
+  res.status(200).json(result);
+}
+
+export const resetPasswordController = async (req, res) => {
+  const { password } = req.body;
+  const result = await resetPasswordService(password);
+  if (result) {
+    res.status(200); // Reset password successfully
+  } else {
+    res.status(400); // Reset password failed
+  }
+}

@@ -31,6 +31,16 @@ const syncModels = async () => {
         await ProductSqliteModel.sync({ alter: true });
         await CartSqliteModel.sync({ alter: true });
         console.log('Database & tables created!');
+
+        // Create entry
+        // const user = await UserSqliteModel.create({
+        //     uname:'root',
+        //     email:'howwilson11@gmail.com',
+        //     password:'root',
+        //     address:{district:'Changhua', city:'Changhua City', address: 'No. 1, Jinde-Road'},
+        //     admin: true
+        //   });
+        // console.log(user);
     } catch (error) {
         console.error('Error syncing database:', error);
     }

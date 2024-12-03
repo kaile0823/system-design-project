@@ -30,8 +30,6 @@ export const authenticate = (req, res, next) => {
     // const token = jwt.sign({ id: user.id }, 'secret', { expiresIn: '1h' });
     // res.json({ token });
     
-    // frontend
-    //     localStorage.setItem('token', response.data.token);
 
     // // Use token for protected routes
     // axios.get('/api/protected', {

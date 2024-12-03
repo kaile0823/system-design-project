@@ -20,6 +20,7 @@ import SettingsView from '@/views/adminpages/SettingsView.vue'
 import RegisterView from '@/views/user/RegisterView.vue'
 import LogInView from '@/views/user/LogInView.vue'
 import ForgotPasswordView from '@/views/user/ForgotPasswordView.vue'
+import ResetPasswordView from '@/views/user/ResetPasswordView.vue'
 
 const routes = [
   { path: '/user',
@@ -27,6 +28,7 @@ const routes = [
       { path: 'login', component: LogInView },
       { path: 'register', component: RegisterView },
       { path: 'forgot-password', component: ForgotPasswordView },
+      { path: 'reset-password', component: ResetPasswordView },
     ]
    },
   {

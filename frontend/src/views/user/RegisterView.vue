@@ -128,7 +128,7 @@ const cities = ref([
                             <Message v-if="$form.email?.invalid" severity="error" size="small" variant="simple">{{
                                 $form.country.error?.message }}</Message> -->
 
-                            <Password name="password" type="text" placeholder="Password" toggleMask fluid>
+                            <Password name="password" type="text" placeholder="Password" :formControl="{ validateOnValueUpdate: true }" toggleMask fluid>
                                 <template #header>
                                     <div class="font-semibold text-xm mb-4">Pick a password</div>
                                 </template>
