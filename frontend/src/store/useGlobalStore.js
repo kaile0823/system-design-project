@@ -4,20 +4,20 @@ export const useGlobalStore = defineStore('global', {
   state: () => ({
     // The global value
     value: null, 
-    user: null,
+    uname: null,
     email: null
   }),
   getters: {
     getValue: (state) => state.value,
-    getUser: (state) => state.user,
+    getUname: (state) => state.uname,
     getEmail: (state) => state.email
   },
   actions: {
     setValue(newValue) {
       this.value = newValue;
     },
-    setUser(user) {
-      this.user = user;
+    setUname(uname) {
+      this.uname = uname;
     },
     setEmail(email) {
       this.email = email;

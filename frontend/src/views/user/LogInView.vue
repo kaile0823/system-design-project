@@ -1,13 +1,15 @@
 <script setup>
 
 import { ref } from "vue";
+import { useRouter } from 'vue-router';
+import { useGlobalStore } from "@/store/useGlobalStore";
 import { zodResolver } from '@primevue/forms/resolvers/zod';
 import { useToast } from "primevue/usetoast";
 import { z } from 'zod';
 import axios from 'axios';
-import { useRouter } from 'vue-router';
 
 const router = useRouter();
+const store = useGlobalStore();
 const toast = useToast();
 const initialValues = ref({
   email: '',
@@ -30,20 +32,22 @@ const resolver = ref(zodResolver(
     // Login result from server
     const response = await axios.post('http://localhost:3002/api/users/login', loginData);
 
-    if (!response.data.isEmailValid) {
+    if (!response.data?.isEmailValid) {
       ctx.addIssue({
         path: ['email'],
         message: 'Email does not exist in server',
       });
-    } else if (!response.data.isPasswordValid) {
+    } else if (!response.data?.isPasswordValid) {
       ctx.addIssue({
         path: ['password'],
         message: 'Password is incorrect',
       });
     }
 
-    if (response.data?.token) {
-      localStorage.setItem('token', response.data.token)
+    if (response.data) {
+      localStorage.setItem('token', response.data.token);
+      store.setUname(response.data.uname);
+      store.setEmail(response.data.email);
     }
   })
 ));

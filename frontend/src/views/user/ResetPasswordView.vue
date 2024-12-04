@@ -17,8 +17,8 @@ const initialValues = ref({
 });
 const password = ref('');
 const passwordConfirm = ref('');
-const cond1 = ref(true);
-const cond2 = ref(true);
+const cond1 = ref(true); // When password is empty
+const cond2 = ref(true); // When password does not match
 
 const resolver = ref(zodResolver(
     z.object({

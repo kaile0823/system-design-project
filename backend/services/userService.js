@@ -1,50 +1,69 @@
 
 import UserSqliteModel from '../models/userSqliteModel.js';
 
-// UTILITIES SERVICES
-
-// Validation for duplicate email and name in SQLite
-export const checkDuplicateService = async (name, email) => {
-  const userByName = await UserSqliteModel.findOne({ where: { name } });
-  const userByEmail = await UserSqliteModel.findOne({ where: { email } });
-
-  console.log(userByName, userByEmail);
-
-  return userByName || userByEmail;
-};
-export const findUserByEmailService = async (email) => {
-  return await UserSqliteModel.findOne({ where: { email } });
-};
-
 // API SERVICES
 
 // Getting all users from SQLite
 export const getUsersService = async () => {
-  return await UserSqliteModel.findAll();
+  try { return await UserSqliteModel.findAll(); }
+  catch (error) {
+    console.error('Error during getting users:', error);
+  };
 };
 
 // Getting a user by uname from SQLite
 export const getUserService = async (id) => {
-  return await UserSqliteModel.findByPk(id);
-};
+  try { return await UserSqliteModel.findByPk(id); }
+  catch (error) {
+    console.error('Error during getting user:', error);
+  };
+}
 
 // Adding a new user to SQLite
 export const addUserService = async (userData) => {
-  return await UserSqliteModel.create(userData);
+  try {
+    return await UserSqliteModel.create(userData);
+  }
+  catch (error) {
+    console.error('Error during adding user:', error);
+  };
 };
 
 // Updating a user by ID in SQLite
 export const updateUserService = async (id, userData) => {
-  return await UserSqliteModel.update(userData, { where: { id } });
-};
+  try { return await UserSqliteModel.update(userData, { where: { id } }); }
+  catch (error) {
+    console.error('Error during updating user:', error);
+  };
+}
 
 // Deleting a user by ID from SQLite
 export const deleteUserService = async (id) => {
-  return await UserSqliteModel.destroy({ where: { id } });
+  try { return await UserSqliteModel.destroy({ where: { id } }); }
+  catch (error) {
+    console.error('Error during deleting user:', error);
+  };
 };
 
+// UTILITIES SERVICES
 
-// User login
+// Validation for duplicate email and name in SQLite
+export const checkDuplicateService = async (uname, email) => {
+  try {
+    const isUserExist = await UserSqliteModel.findOne({ where: { uname } });
+    const isEmailExist = await UserSqliteModel.findOne({ where: { email } });
+    const result = {
+      uname: isUserExist ? true : false,
+      email: isEmailExist ? true : false,
+    };
+
+    return result;
+  }
+  catch (error) {
+    console.error('Error during duplicate check:', error);
+  };
+}
+
 export const loginService = async (email, password) => {
   try {
     const user = await UserSqliteModel.findOne({ where: { email } });
@@ -59,7 +78,7 @@ export const loginService = async (email, password) => {
 
     // Generate a token (example: using a library like jsonwebtoken)
     const token = "exampleGeneratedToken"; // Replace with your token generation logic
-    return { isEmailValid: true, isPasswordValid: true, token };
+    return { isEmailValid: true, isPasswordValid: true, token, uname: user.uname };
   } catch (error) {
     console.error('Error during login:', error);
     return { isEmailValid: false, isPasswordValid: false };
