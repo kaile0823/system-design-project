@@ -1,35 +1,43 @@
 <script setup>
 
 import NavbarComp from '@/components/NavbarComp.vue';
-import DrawerComp from '@/components/DrawerComp.vue';
-import { ref } from 'vue';
+import MobileNavbarComp from '@/components/MobileNavbarComp.vue';
+import { useRouter } from 'vue-router';
+import { ref, onMounted } from 'vue';
+import { useGlobalStore } from '@/store/useGlobalStore';
 
-const visible = ref(false);
+const store = useGlobalStore();
+
+const token = localStorage.getItem('token');
+
+onMounted(async () => {
+    // kl: 跟伺服器透過token獲取使用者信息
+    const success = true;
+
+    if (success) {
+        const result = {
+            uname: 'ABC',
+            email: 'howwilson12@gmail.com',
+            admin: true
+        }
+
+        store.setUname(result.uname);
+        store.setEmail(result.email);
+        store.setAdmin(result.admin);
+    }
+})
 
 </script>
 
 <template>
     <div class="">
         <div class="block md:hidden p-2" style="background-color: var(--p-primary-color)">
-            <DrawerComp @close="visible = false" v-model:visible="visible" />
-            <div class="flex justify-content-between align-items-center p-2">
-                <Button icon="pi pi-bars" @click="visible = true" />
-                <div class="flex justify-content-center align-items-center gap-5">
-                    <router-link to="/cart">
-                        <a><i class="pi pi-shopping-cart text-white" /></a>
-                    </router-link>
-                    <a @click="toggleDarkMode()">
-                        <i v-if="dark" class="pi pi-sun text-white"></i>
-                        <i v-else class="pi pi-moon text-white"></i>
-                    </a>
-                    <router-link to="/user/login">
-                        <a><i class="pi pi-user text-white" /></a>
-                    </router-link>
-                </div>
-            </div>
+            <!-- Mobile Version -->
+            <MobileNavbarComp />
         </div>
 
         <div class="hidden md:block  p-4 justify-content-center" style="background-color: var(--p-primary-color)">
+            <!-- Desktop Version -->
             <NavbarComp />
         </div>
 

@@ -1,12 +1,21 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
+import { useGlobalStore } from '@/store/useGlobalStore';
+import { useRouter } from 'vue-router';
 
+const store = useGlobalStore();
+const router = useRouter();
 const products = ref([]);
 const product = ref(null);
-const showDialog = ref(false);
 const images = ref([]);
 const selectProductCount = ref(1);
+
+const showDialog = ref(false);
+const showAddCartSuccessDialog = ref(false);
+const showAddCartFailedDialog = ref(false);
+const showPurchaseSuccessDialog = ref(false);
+const showPurchaseFailedDialog = ref(false);
 
 onMounted(async () => {
   try {
@@ -17,6 +26,7 @@ onMounted(async () => {
   }
 });
 
+// View details of a product card
 const viewDetails = (prop) => {
   product.value = prop;
   product.value.images.forEach(image => {
@@ -25,13 +35,14 @@ const viewDetails = (prop) => {
   showDialog.value = true;
 };
 
+// Close the details dialog for product card
 const closeDetails = () => {
   images.value = [];
   product.value = null;
   showDialog.value = false;
 };
 
-
+// UTILITIES
 const countRating = (data) => {
   if (data.ratingCount == 0) {
     data.ratingCount = 1
@@ -69,23 +80,79 @@ const getInventoryStatus = (quantity) => {
   }
 }
 
-const checkAccount = async() => {
-  
+
+const checkAccount = async () => {
+  const userState = { uname: store.getUname, email: store.getEmail };
+  if (!userState.uname || !userState.email) {
+    router.push('/user/login');
+  }
 }
 
-const purchase = async (product) => {
+const purchase = async () => {
+  await checkAccount(); // 檢查是否已登入
 
+  const success = false;
+
+  const data = {
+    email: store.getEmail,
+    productID: product.value.id,
+    productCount: selectProductCount.value
+  }
+
+  // kl： 處理購物邏輯
+  showDialog.value = false;
+  if (success) {
+    showPurchaseSuccessDialog.value = true;
+  } else {
+    showPurchaseFailedDialog.value = true;
+  }
 }
 
-const addToCart = async (product) => {
+const addToCart = async () => {
+  await checkAccount(); // 檢查是否已登入/
 
+  const success = false;
+
+  const data = {
+    email: store.getEmail,
+    productID: product.value.id,
+    productCount: selectProductCount.value
+  }
+
+  // kl： 處理購物車邏輯
+  showDialog.value = false;
+  if (success) {
+    showAddCartSuccessDialog.value = true;
+  } else {
+    showAddCartFailedDialog.value = true;
+  }
 }
 
-const rateLiked = async (product) => {
+const closeAddCartSuccess = () => {
+  showAddCartSuccessDialog.value = false;
+  window.location.reload();
+}
+
+const closeAddCartFailed = () => {
+  showAddCartFailedDialog.value = false;
+  window.location.reload();
+}
+
+const closePurchaseSuccess = () => {
+  showPurchaseSuccessDialog.value = false;
+  window.location.reload();
+}
+
+const closePurchaseFailed = () => {
+  showPurchaseFailedDialog.value = false;
+  window.location.reload();
+}
+
+const rateLiked = async () => {
   console.log('liked')
 }
 
-const rateDisliked = async (product) => {
+const rateDisliked = async () => {
   console.log('disliked')
 }
 
@@ -168,16 +235,30 @@ const rateDisliked = async (product) => {
               <Button icon="pi pi-thumbs-up" class="p-button-rounded p-button-secondary" @click="rateLiked" />
               <Button icon="pi pi-thumbs-down" class="p-button-rounded p-button-secondary" @click="rateDisliked" />
             </div>
-
           </div>
         </div>
 
       </div>
     </Dialog>
 
-    <Dialog v-model:visible="showCart" :modal="true" :style="{ width: '50vw', maxWidth: '50rem' }"
-      :header="`Cart Details`" @close="closeDetails" @after-hide="closeDetails">
-      <div class="grid w-full"></div>
+    <Dialog v-model:visible="showAddCartSuccessDialog" :modal="true" :style="{ width: '50vw', maxWidth: '50rem', height: '50vh' }"
+      :header="Information" @close="closeAddCartSuccess" @after-hide="closeAddCartSuccess">
+      <div class="text-center">Successfully Added to Cart</div>
+    </Dialog>
+
+    <Dialog v-model:visible="showAddCartFailedDialog" :modal="true" :style="{ width: '50vw', maxWidth: '50rem', height: '50vh' }"
+      :header="Information" @close="closeAddCartFailed" @after-hide="closeAddCartFailed">
+      <div class="text-center">Failed Adding to Cart</div>
+    </Dialog>
+
+    <Dialog v-model:visible="showPurchaseSuccessDialog" :modal="true" :style="{ width: '50vw', maxWidth: '50rem', height: '50vh' }"
+      :header="Information" @close="closePurchaseSuccess" @after-hide="closePurchaseSuccess">
+      <div class="text-center">Successfully Added to Cart</div>
+    </Dialog>
+
+    <Dialog v-model:visible="showPurchaseFailedDialog" :modal="true" :style="{ width: '50vw', maxWidth: '50rem', height: '50vh' }"
+      :header="Information" @close="closePurchaseFailed" @after-hide="closePurchaseFailed">
+      <div class="text-center">Failed Adding to Cart</div>
     </Dialog>
   </div>
 </template>

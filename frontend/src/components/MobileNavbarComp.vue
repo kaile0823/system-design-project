@@ -1,26 +1,43 @@
 <script setup>
 
-import axios from 'axios';
-import AdminBarComp from '@/components/AdminbarComp.vue';
-import { onMounted, ref, computed } from 'vue'
+import { onMounted, ref } from 'vue'
+import { useGlobalStore } from '@/store/useGlobalStore';
+import { useRouter } from 'vue-router';
+import AdminBarComp from '@/components/AdminBarComp.vue';
 
+const store = useGlobalStore();
+const router = useRouter();
 const dark = ref(false);
-const isAdmin = ref(false)
-const token = localStorage.getItem('token')
+const isAdmin = ref(false);
+const visible = ref(false);
 
 onMounted(async () => {
-    // Check if the user is an admin
-    isAdmin.value = true
+    if (store.getAdmin) {
+        isAdmin.value = true
+    }
 })
+
+const checkAccount = async () => {
+    const userState = { uname: store.getUname, email: store.getEmail };
+    if (!userState.uname || !userState.email) {
+        router.push('/user/login');
+    }
+}
+
+const openCart = async () => {
+    await checkAccount();
+    router.push('/cart');
+}
 
 function toggleDarkMode() {
     document.documentElement.classList.toggle('my-app-dark');
     dark.value = !dark.value;
 }
+
 </script>
 
 <template>
-    <Drawer>
+    <Drawer @close="visible = false" v-model:visible="visible">
         <template #container="{ closeCallback }">
             <div class="flex flex-column h-full">
                 <div class="flex justify-content-between px-3 pt-4 gap-3">
@@ -53,4 +70,19 @@ function toggleDarkMode() {
             </div>
         </template>
     </Drawer>
+
+    <div class="flex justify-content-between align-items-center p-2">
+        <Button icon="pi pi-bars" @click="visible = true" />
+        <div class="flex justify-content-center align-items-center gap-5">
+            <a @click="openCart"><i class="pi pi-shopping-cart text-white" /></a>
+            <a @click="toggleDarkMode()">
+                <i v-if="dark" class="pi pi-sun text-white"></i>
+                <i v-else class="pi pi-moon text-white"></i>
+            </a>
+            <router-link to="/user/login">
+                <a><i class="pi pi-user text-white" /></a>
+            </router-link>
+            <span v-if="store.getUname" class="font-bold text-white"> User: {{ store.getUname }} </span>
+        </div>
+    </div>
 </template>
