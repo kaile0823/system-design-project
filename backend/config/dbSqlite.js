@@ -8,7 +8,6 @@ export const sequelize = new Sequelize({
 })
 
 export const connectSqlite = async () => {
-
   try {
     await sequelize.authenticate();
     console.log('SQLite connected');

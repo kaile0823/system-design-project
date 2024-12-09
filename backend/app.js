@@ -3,12 +3,13 @@ import express from 'express';
 import cors from 'cors';
 
 // import { connectMongoDB } from './config/dbMongo.js';
-import { connectSqlite } from './config/dbSqlite.js';
+import { connectSqlite, sequelize } from './config/dbSqlite.js';
 
 import UserSqliteModel from './models/userSqliteModel.js';
 import CardSqliteModel from './models/cardSqliteModel.js';
 import ProductSqliteModel from './models/productSqliteModel.js';
 import CartSqliteModel from './models/cartSqliteModel.js';
+import PurchaseSqliteModel from './models/purchaseSqliteModel.js';
 
 import userRoutes from './routes/userRoutes.js';
 import productRoutes from './routes/productRoutes.js';
@@ -21,7 +22,7 @@ const app = express();
 
 // Connect to databases
 // connectMongoDB();
-connectSqlite();
+await connectSqlite();
 
 const syncModels = async () => {
     try {
@@ -30,6 +31,11 @@ const syncModels = async () => {
         await CardSqliteModel.sync({ alter: true });
         await ProductSqliteModel.sync({ alter: true });
         await CartSqliteModel.sync({ alter: true });
+        await PurchaseSqliteModel.sync({ alter: true });
+
+        // await sequelize.sync({ force: true });
+        // await UserSqliteModel.update({ admin: true }, { where: { id: 1 } });
+
         console.log('Database & tables created!');
 
         // Create entry
@@ -45,7 +51,7 @@ const syncModels = async () => {
         console.error('Error syncing database:', error);
     }
 };
-syncModels();
+await syncModels();
 
 // Middleware
 app.use(express.json());
@@ -60,4 +66,5 @@ app.use('/api', settingRoutes);
 app.use('/api', imageRoutes);
 app.use('/api', cartRoutes);
 app.use('/api', purchaseRoutes);
+
 export default app;

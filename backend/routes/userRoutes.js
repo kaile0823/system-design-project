@@ -1,15 +1,16 @@
 import express from 'express';
-import { getUsersController, getUserController, addUserController, updateUserController, deleteUserController, loginController, resetPasswordController } from '../controllers/userController.js';
+import * as user  from '../controllers/userController.js';
 
 const router = express.Router();
 
-router.get('/users', getUsersController);
-router.get('/users/:id', getUserController);
-router.post('/users', addUserController);
-router.put('/users/:id', updateUserController);
-router.delete('/users/:id', deleteUserController);
+router.get('/users', user.getUsersController);
+router.get('/users/:id', user.getUserController);
+router.post('/users', user.addUserController);
+router.put('/users/:id', user.updateUserController);
+router.delete('/users/:id', user.deleteUserController);
 
-router.post('/users/login', loginController);
-router.post('/users/reset-password', resetPasswordController);
+router.post('/users/login', user.loginController);
+router.post('/users/reset-password', user.resetPasswordController);
+router.post('/users/verify-token', user.loginVerifyController);
 
 export default router;

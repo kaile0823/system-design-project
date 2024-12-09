@@ -1,5 +1,6 @@
 
 import UserSqliteModel from '../models/userSqliteModel.js';
+import jwt from 'jsonwebtoken';
 
 // API SERVICES
 
@@ -77,11 +78,27 @@ export const loginService = async (email, password) => {
     }
 
     // Generate a token (example: using a library like jsonwebtoken)
-    const token = "exampleGeneratedToken"; // Replace with your token generation logic
+    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1d' });
     return { isEmailValid: true, isPasswordValid: true, token, uname: user.uname };
   } catch (error) {
     console.error('Error during login:', error);
     return { isEmailValid: false, isPasswordValid: false };
+  }
+}
+
+// For auto login with saved token on client
+export const loginVerifyService = async (token) => {
+  try {
+    if(!token) return false;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await UserSqliteModel.findByPk(decoded.id);
+    if (!user) {
+      return false;
+    }
+    return user;
+  } catch (error) {
+    console.error('Error during login verification:', error);
+    return false;
   }
 }
 

@@ -45,6 +45,7 @@ const resolver = ref(zodResolver(
     }
 
     if (response.data) {
+      console.log(response.data);
       localStorage.setItem('token', response.data.token);
       store.setUname(response.data.uname);
       store.setEmail(response.data.email);
@@ -105,21 +106,22 @@ const onFormSubmit = async ({ valid }) => {
                 <Message v-if="$form.password?.invalid" severity="error" size="small" variant="simple">{{
                   $form.password.error?.message }}</Message>
 
-                <router-link class="ml-2" to="/user/forgot-password">
-                  <a>Forgot password?</a>
-                </router-link>
-
-                <div class="flex justify-content-center">
-                  <Button class="w-3" type="submit" severity="primary" label="Log In" />
+                <div class="grid mt-4">
+                  <div class="col-12 my-2">
+                    <Button type="submit" severity="primary" label="Log In" fluid="" />
+                  </div>
+                  <div class="col-12 md:col-4">
+                    <Button severity="secondary" label="Back to Home" @click="router.push('/')" fluid/>
+                  </div>
+                  <div class="col-12 md:col-4">
+                    <Button severity="secondary" label="Forgot Password" @click="router.push('/user/forgot-password')" fluid/>
+                  </div>
+                  <div class="col-12 md:col-4">
+                    <Button severity="secondary" label="Register" @click="router.push('/user/register')" fluid/>
+                  </div>
                 </div>
 
               </Form>
-              <div class="ml-2">
-                Don't have an account?
-                <router-link to="/user/register">
-                  <a> Register Here</a>
-                </router-link>
-              </div>
             </div>
             <Toast />
 

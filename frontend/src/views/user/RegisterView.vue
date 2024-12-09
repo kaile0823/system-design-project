@@ -1,74 +1,73 @@
 <script setup>
 
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { useRouter } from 'vue-router';
 import { useToast } from "primevue/usetoast";
 import { zodResolver } from '@primevue/forms/resolvers/zod';
 import { z } from 'zod';
-import { CountryService } from "@/service/CountryService";
 import { TaiwanService } from "@/service/TaiwanService";
 import axios from 'axios';
 
 const router = useRouter();
 const toast = useToast();
 const initialValues = ref({
-    uname: 'ABC',
-    email: 'howwilson11@gmail.com',
-    password: 'Nut12345',
-    passwordConfirm: 'Nut12345',
+    uname: '',
+    email: '',
+    password: '',
+    passwordConfirm: '',
     country: { district: '', city: '', address: '' },
 });
 const uname = ref(null);
-const email = ref('howwilson11@gmail.com');
-const password = ref('Nut12345');
-const passwordConfirm = ref('Nut12345');
+const email = ref('');
+const password = ref('');
+const passwordConfirm = ref('');
 const cond1 = ref(true); // When password is empty
 const cond2 = ref(true); // When password does not match
 
-const countries = ref();
-// const cities = ref([
-//     { name: 'New York', code: 'NY' },
-//     { name: 'Rome', code: 'RM' },
-//     { name: 'London', code: 'LDN' },
-//     { name: 'Istanbul', code: 'IST' },
-//     { name: 'Paris', code: 'PRS' }
-// ]);
-
+const selectedCounty = ref('');
+const selectedDistrict = ref('');
+const counties = ref([]);
 const districts = ref([]);
-const cities = ref([]);
+const allDistricts = ref([]);
+
+watch(selectedCounty, (newValue) => {
+    // Update districts based on the selected county
+    const index = counties.value.findIndex((item) => item === newValue);
+    if (index !== -1) {
+        const array = allDistricts.value[index];
+        districts.value = [];
+        array.english.forEach((value, index) => {
+            districts.value.push(`${value} ${array.mandarin[index]}`);
+        })
+        // console.log(districts.value);
+    }
+});
 
 onMounted(() => {
-    CountryService.getCountries().then((data) => (countries.value = data));
 
     const obj = TaiwanService.getLocationInfo();
-    console.log(obj);
-
-    // Iterate over the methods in the objects
-    Object.keys(obj).forEach((key) => {
-
-    });
-
     const englishArray = obj.counties.english;
     const mandarinArray = obj.counties.mandarin;
 
-    // Pair and print the values
+    // Get county info
     englishArray.forEach((value, index) => {
-        console.log(`${value} ${mandarinArray[index]}`);
+        counties.value.push(`${value} ${mandarinArray[index]}`);
     });
+    // console.log(counties.value);
 
-    const englishArray2 = obj.districts.english[0];
-    const mandarinArray2 = obj.districts.mandarin[0];
-
-    // Pair and print the values
+    // Get district info
+    const englishArray2 = obj.districts.english;
+    const mandarinArray2 = obj.districts.mandarin;
     englishArray2.forEach((value, index) => {
-        console.log(`${value} ${mandarinArray2[index]}`);
-    });
+        allDistricts.value.push({ english: value[0], mandarin: mandarinArray2[index][0] });
+    })
 });
 
 const resolver = ref(zodResolver(
     z.object({
         uname: z.string()
-            .min(3, { message: 'Minimum 3 characters.' }),
+            .min(3, { message: 'Minimum 3 characters.' })
+            .max(30, { message: 'Maximum 30 characters.' }),
         email: z.string()
             .email('Invalid email'),
         password: z.string()
@@ -92,10 +91,26 @@ const resolver = ref(zodResolver(
                     return false
                 }
             }),
-        passwordConfirm: z.string()
+        address: z.string()
+            .min(1, { message: 'Address is required' }),
+        county: z.any().refine((val) => {
+            if (val) {
+                return true
+            }
+            return false;
+        }, { message: 'County is required.' }),
+        district: z.any().refine((val) => {
+            console.log(val);
+            if (val) {
+                return true
+            }
+            return false;
+        }, { message: 'District is required.' }),
+        passwordConfirm: z.string(),
+
     }).superRefine(async (data, ctx) => {
 
-        console.log(data);
+        // console.log(data);
         // Check if password does not match
         if (data.password !== data.passwordConfirm) {
             cond2.value = true;
@@ -114,21 +129,21 @@ const resolver = ref(zodResolver(
         }
 
         try {
-            const address =
+            const datas =
             {
-                district: 'test',
-                city: 'test',
-                address: 'test'
-            }
-            const userResponse = await axios.post('http://localhost:3002/api/users/', {
                 uname: data.uname,
                 email: data.email,
                 password: data.password,
-                address: address
-            });
+                address: {
+                    address: data.address,
+                    county: data.county,
+                    district: data.district,
+                }
+            }
+            // console.log(datas);
 
-            console.log(userResponse);
             // Check if username or email already exists
+            const userResponse = await axios.post('http://localhost:3002/api/users/', datas);
             if (userResponse.status === 200) {
                 if (userResponse.data.uname) {
                     ctx.addIssue({
@@ -233,26 +248,30 @@ const onFormSubmit = ({ valid }) => {
                                 </InputGroupAddon>
                                 <InputText v-model="address" name="address" placeholder="Address" />
                             </InputGroup>
+                            <Message v-if="$form.address?.invalid" class='col-6' severity="error" size="small"
+                                variant="simple">{{
+                                    $form.address.error?.message }}</Message>
 
                             <InputGroup>
                                 <InputGroupAddon>
                                     <i class="pi pi-map"></i>
                                 </InputGroupAddon>
-                                <Select name="district" :options="districts" optionLabel="name" placeholder="District"
-                                    fluid />
+                                <Select v-model="selectedCounty" name="county" :options="counties"
+                                    placeholder="Counties" fluid />
 
                                 <InputGroupAddon>
                                     <i class="pi pi-map"></i>
                                 </InputGroupAddon>
-                                <Select name="city" :options="cities" optionLabel="name" placeholder="City" fluid />
+                                <Select v-model="selectedDistrict" name="district" :options="districts"
+                                    placeholder="District" fluid />
                             </InputGroup>
                             <div class="grid">
+                                <Message v-if="$form.county?.invalid" class='col-6' severity="error" size="small"
+                                    variant="simple">{{
+                                        $form.county.error?.message }}</Message>
                                 <Message v-if="$form.district?.invalid" class='col-6' severity="error" size="small"
                                     variant="simple">{{
                                         $form.district.error?.message }}</Message>
-                                <Message v-if="$form.city?.invalid" class='col-6' severity="error" size="small"
-                                    variant="simple">{{
-                                        $form.city.error?.message }}</Message>
                             </div>
 
                             <div class="flex justify-content-center">

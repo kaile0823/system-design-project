@@ -2,30 +2,28 @@
 
 import NavbarComp from '@/components/NavbarComp.vue';
 import MobileNavbarComp from '@/components/MobileNavbarComp.vue';
-import { useRouter } from 'vue-router';
 import { ref, onMounted } from 'vue';
 import { useGlobalStore } from '@/store/useGlobalStore';
+import axios from 'axios';
 
 const store = useGlobalStore();
-
 const token = localStorage.getItem('token');
 
 onMounted(async () => {
-    // kl: 跟伺服器透過token獲取使用者信息
-    const success = true;
 
-    if (success) {
-        const result = {
-            uname: 'ABC',
-            email: 'howwilson12@gmail.com',
-            admin: true
-        }
-
-        store.setUname(result.uname);
-        store.setEmail(result.email);
-        store.setAdmin(result.admin);
+    try {
+        const response = await axios.post('http://localhost:3002/api/users/verify-token', { token: token });
+        // console.log(response.data);
+        store.setUname(response.data.uname);
+        store.setEmail(response.data.email);
+        store.setAdmin(response.data.admin);
+        store.setUserId(response.data.id);
     }
-})
+    catch (error) {
+        console.log(error);
+    }
+
+});
 
 </script>
 

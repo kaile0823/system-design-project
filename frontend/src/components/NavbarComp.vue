@@ -1,6 +1,6 @@
 <script setup>
 
-import { ref, onMounted } from 'vue';
+import { ref, watch } from 'vue';
 import { useGlobalStore } from '@/store/useGlobalStore';
 import { useRouter } from 'vue-router';
 
@@ -8,28 +8,41 @@ const store = useGlobalStore();
 const router = useRouter();
 const isAdmin = ref(false);
 const dark = ref(false);
+const isLoggedIn = ref(false);
 
-onMounted(async () => {
-    if (store.getAdmin) {
-        isAdmin.value = true
-    }
+watch(() => store.getAdmin, () => {
+    isAdmin.value = store.getAdmin
+    isLoggedIn.value = store.getUname ? true : false
 })
 
-function toggleDarkMode() {
-    document.documentElement.classList.toggle('my-app-dark');
-    dark.value = !dark.value;
-}
 
 const checkAccount = async () => {
-    const userState = { uname: store.getUname, email: store.getEmail };
-    if (!userState.uname || !userState.email) {
+    if (!isLoggedIn.value) {
         router.push('/user/login');
+        return false;
+    }
+    else {
+        return true
     }
 }
 
 const openCart = async () => {
-    await checkAccount();
+    const result = await checkAccount();
+    if (!result) return;
     router.push('/cart');
+}
+
+const logout = () => {
+    localStorage.clear();
+    store.clear;
+    isLoggedIn.value = false;
+    isAdmin.value = false;
+    router.push('/user/login');
+}
+
+function toggleDarkMode() {
+    document.documentElement.classList.toggle('my-app-dark');
+    dark.value = !dark.value;
 }
 
 </script>
@@ -58,16 +71,13 @@ const openCart = async () => {
                         <i v-if="dark" class="pi pi-sun"></i>
                         <i v-else class="pi pi-moon"></i>
                     </a>
-                    <router-link to="/user/login">
-                        <a>
-                            <i class="pi pi-user"></i>
-                        </a>
+                    <router-link v-if="!store.getUname" to="/user/login">
+                        <a><i class="pi pi-user " /></a>
                     </router-link>
-                    <router-link to="/user">
-                        <a v-if="store.getUname" class="font-bold">
-                            User: {{ store.getUname }} 
-                        </a>
+                    <a v-else @click="logout"><i class="pi pi-sign-out " /></a>
+                    <router-link v-if="store.getUname" to="/user" class="font-bold "> User: {{ store.getUname }}
                     </router-link>
+                    <router-link v-else to="/user" class="font-bold "> User: Guest </router-link>
                 </div>
             </div>
         </template>

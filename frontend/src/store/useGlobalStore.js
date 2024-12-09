@@ -6,13 +6,15 @@ export const useGlobalStore = defineStore('global', {
     value: null, 
     uname: null,
     email: null,
-    admin: false
+    admin: false,
+    userId: null
   }),
   getters: {
     getValue: (state) => state.value,
     getUname: (state) => state.uname,
     getEmail: (state) => state.email,
-    getAdmin: (state) => state.admin
+    getAdmin: (state) => state.admin,
+    getUserId: (state) => state.userId
   },
   actions: {
     setValue(newValue) {
@@ -26,6 +28,16 @@ export const useGlobalStore = defineStore('global', {
     },
     setAdmin(admin) {
       this.admin = admin;
+    },
+    setUserId(userId) {
+      this.userId = userId;
+    },
+    clear() {
+      this.value = null;
+      this.uname = null;
+      this.email = null;
+      this.admin = false;
+      this.userId = null;
     }
   },
 });

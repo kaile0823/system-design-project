@@ -17,7 +17,12 @@ const showAddCartFailedDialog = ref(false);
 const showPurchaseSuccessDialog = ref(false);
 const showPurchaseFailedDialog = ref(false);
 
+const isLoggedIn = ref(false);
+ 
 onMounted(async () => {
+
+  isLoggedIn.value = store.getUname ? true : false
+  
   try {
     const response = await axios.get('http://localhost:3002/api/products');
     products.value = response.data;
@@ -82,10 +87,13 @@ const getInventoryStatus = (quantity) => {
 
 
 const checkAccount = async () => {
-  const userState = { uname: store.getUname, email: store.getEmail };
-  if (!userState.uname || !userState.email) {
-    router.push('/user/login');
-  }
+    if (!isLoggedIn.value) {
+        router.push('/user/login');
+        return false;
+    }
+    else {
+        return true
+    }
 }
 
 const purchase = async () => {

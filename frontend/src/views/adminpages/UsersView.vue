@@ -1,328 +1,328 @@
 <script setup>
 
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { FilterMatchMode } from '@primevue/core/api';
 import { useToast } from 'primevue/usetoast';
-import { ProductService } from '@/service/ProductService';
+import { zodResolver } from '@primevue/forms/resolvers/zod';
+import { z } from 'zod';
+import { TaiwanService } from "@/service/TaiwanService";
 import axios from 'axios';
 
 // Initialization
-
 const toast = useToast();
 const dt = ref();
-const products = ref();
-const productDialog = ref(false);
-const deleteProductDialog = ref(false);
-const deleteProductsDialog = ref(false);
-const product = ref({});
-const selectedProducts = ref();
+
+const users = ref();
+// const user = ref({});
+const selectedUsers = ref();
+
+const userDialog = ref(false);
+const deleteUserDialog = ref(false);
+const deleteUsersDialog = ref(false);
+
 const filters = ref({
     'global': { value: null, matchMode: FilterMatchMode.CONTAINS },
 });
 const submitted = ref(false);
+const isUpdate = ref(false);
+const initialValues = ref({
+    uname: '',
+    email: '',
+    password: '',
+    passwordConfirm: '',
+    country: { district: '', city: '', address: '' },
+});
+const userId = ref(null);
+const uname = ref(null);
+const email = ref('');
+const password = ref('');
+const passwordConfirm = ref('');
+const address = ref('');
+const cond1 = ref(true); // When password is empty
+const cond2 = ref(true); // When password does not match
+const selectedCounty = ref('');
+const selectedDistrict = ref('');
+const counties = ref([]);
+const districts = ref([]);
+const allDistricts = ref([]);
 
-// Server Functions
+onMounted(async () => {
+    await fetchUsers();
 
-// Fetch products from server
-const fetchProducts = async () => {
+    const obj = TaiwanService.getLocationInfo();
+    const englishArray = obj.counties.english;
+    const mandarinArray = obj.counties.mandarin;
+
+    // Get county info
+    englishArray.forEach((value, index) => {
+        counties.value.push(`${value} ${mandarinArray[index]}`);
+    });
+
+    // Get district info
+    const englishArray2 = obj.districts.english;
+    const mandarinArray2 = obj.districts.mandarin;
+    englishArray2.forEach((value, index) => {
+        allDistricts.value.push({ english: value[0], mandarin: mandarinArray2[index][0] });
+    })
+});
+
+const fetchUsers = async () => {
     try {
-        const response = await axios.get('http://localhost:3002/api/products');
+        const response = await axios.get('http://localhost:3002/api/users');
         if (response && response.data) {
-            products.value = response.data;
+            users.value = response.data;
         } else {
             console.error('No data received from the API');
         }
     } catch (error) {
-        console.error("Client can't get Products: ", error);
+        console.error("Client can't get users: ", error);
     }
-
-    // console.log(products.value);
 };
 
-const renameFileObject = (originalFile, newName) => {
-    const originalName = originalFile.name;
-    const extension = originalName.substring(originalName.lastIndexOf('.'));
-    const newFileName = `${newName}${extension}`;
-
-    return new File([originalFile], newFileName, { type: originalFile.type });
-}
-
-onMounted(async () => {
-    await fetchProducts();
+watch(selectedCounty, (newValue) => {
+    // Update districts based on the selected county
+    const index = counties.value.findIndex((item) => item === newValue);
+    if (index !== -1) {
+        const array = allDistricts.value[index];
+        districts.value = [];
+        array.english.forEach((value, index) => {
+            districts.value.push(`${value} ${array.mandarin[index]}`);
+        })
+        // console.log(districts.value);
+    }
 });
 
-// Update based on server
-const statuses = ref([
-    { label: 'Accessories', value: 'Accessories' },
-    { label: 'Clothing', value: 'Clothing' },
-    { label: 'Electronics', value: 'Electronics' },
-    { label: 'Fitness', value: 'Fitness' },
-]);
+const resolver = ref(zodResolver(
+    z.object({
+        uname: z.string()
+            .min(3, { message: 'Minimum 3 characters.' })
+            .max(30, { message: 'Maximum 30 characters.' }),
+        email: z.string()
+            .email('Invalid email'),
+        password: z.string()
+            .min(6, { message: 'Minimum 6 characters.' })
+            .max(20, { message: 'Maximum 20 characters.' })
+            .refine((value) => /[a-z]/.test(value), {
+                message: 'Must have a lowercase letter.'
+            })
+            .refine((value) => /[A-Z]/.test(value), {
+                message: 'Must have an uppercase letter.'
+            })
+            .refine((value) => /[0-9]/.test(value), {
+                message: 'Must have a number.'
+            })
+            .refine((value) => {
+                if (value) {
+                    cond1.value = false;
+                    return true
+                } else {
+                    cond1.value = true;
+                    return false
+                }
+            }),
+        address: z.string()
+            .min(1, { message: 'Address is required' }),
+        county: z.any().refine((val) => {
+            if (val) {
+                return true
+            }
+            return false;
+        }, { message: 'County is required.' }),
+        district: z.any().refine((val) => {
+            console.log(val);
+            if (val) {
+                return true
+            }
+            return false;
+        }, { message: 'District is required.' }),
+        passwordConfirm: z.string(),
 
-// Create product and push to server
-const addProduct = async () => {
+    }).superRefine(async (data, ctx) => {
 
-    // product.value.image = JSON.stringify(product.value.image);
-
-    try {
-        const response = await axios.post('http://localhost:3002/api/products', product.value);
-        if (response.status === 201 && response.data) {
-            products.value.push(response.data);
-            toast.add({ severity: 'success', summary: 'Successful', detail: 'Product Created', life: 3000 });
-        } else {
-            throw new Error('Failed to create product');
+        // console.log(data);
+        // Check if password does not match
+        if (data.password !== data.passwordConfirm) {
+            cond2.value = true;
+            ctx.addIssue({
+                path: ['passwordConfirm'],
+                message: 'Passwords do not match.',
+            });
         }
-        await onImageUpload();
-    } catch (error) {
-        console.error("Client can't add Products: ", error);
-        toast.add({ severity: 'error', summary: 'Error', detail: 'Product Not Created', life: 3000 });
-    }
-
-}
-
-// Update product
-const updateProduct = async () => {
-    try {
-        const id = product.value.id;
-        const response = await axios.put(`http://localhost:3002/api/products/${id}`, product.value);
-        if (response.status === 201) {
-            products.value[findIndexById(product.value.id)] = product.value;
-            toast.add({ severity: 'success', summary: 'Successful', detail: 'Product Updated', life: 3000 });
-        } else {
-            throw new Error('Failed to update product');
+        else {
+            cond2.value = false;
         }
-        await onImageUpload();
-    } catch (error) {
-        console.error("Client can't update Products: ", error);
-        toast.add({ severity: 'error', summary: 'Error', detail: 'Product Not Updated', life: 3000 });
-    }
 
-}
-
-// Delete product
-
-const deleteProduct = async () => {
-    try {
-        const id = product.value.id;
-        const response = await axios.delete(`http://localhost:3002/api/products/${id}`);
-        if (response.status === 204) {
-            products.value = products.value.filter(val => val.id !== product.value.id);
-            product.value = {};
-            toast.add({ severity: 'success', summary: 'Successful', detail: 'Product Deleted', life: 3000 });
-            deleteProductDialog.value = false;
-        } else {
-            throw new Error('Failed to delete product');
+        // Proceed if password validation is valid
+        if (cond1.value || cond2.value) {
+            return
         }
-    } catch (error) {
-        console.error("Client can't delete Products: ", error);
-        toast.add({ severity: 'error', summary: 'Error', detail: 'Product Not Deleted', life: 3000 });
-    }
 
-};
-
-// Delete productS
-const deleteSelectedProducts = async () => {
-
-    for (const product of selectedProducts.value) {
         try {
-            await axios.delete(`http://localhost:3002/api/products/${product.id}`);
-            console.log(`Deleted product with ID: ${product.id}`);
-        } catch (error) {
-            console.error(`Failed to delete product with ID: ${product.id}`, error);
-            selectedProducts.value = selectedProducts.value.filter(val => val.id !== product.id);
-            toast.add({ severity: 'error', summary: 'Error', detail: 'Product Not Deleted', life: 3000 });
-        }
-    }
-    products.value = products.value.filter(val => !selectedProducts.value.includes(val));
-    deleteProductsDialog.value = false;
-    selectedProducts.value = null;
-    toast.add({ severity: 'success', summary: 'Successful', detail: 'Products Deleted', life: 3000 });
+            const datas =
+            {
+                uname: data.uname,
+                email: data.email,
+                password: data.password,
+                address: {
+                    address: data.address,
+                    county: data.county,
+                    district: data.district,
+                }
+            }
+            // console.log(datas);
 
-};
+            // Check if username or email already exists
+            let userResponse;
+            console.log(isUpdate.value, userId.value, datas);
 
-// Image Operation
-
-const files = ref([]);
-
-const onImageUpload = async () => {
-
-    console.log(files.value);
-
-    let count = 0;
-    try {
-
-        await axios.delete(`http://localhost:3002/api/images/${product.value.id}`);
-
-        files.value.map(async (file) => {
-            const id = product.value.id;
-            const newName = `${id}_${count}`;
-            count += 1;
-            const renamedFile = renameFileObject(file, newName);
-            const formData = new FormData();
-            formData.append("image", renamedFile);
-            const uploadResponse = await axios.post('http://localhost:3002/api/images', formData, {
-                headers: { "Content-Type": "multipart/form-data" },
-            });
-            toast.add({ severity: 'info', summary: 'Success', detail: 'File Uploaded', life: 3000 });
-        })
-    } catch (error) {
-        console.error("Error uploading image:", error);
-    }
-};
-
-const onImageSelect = async (event) => {
-
-    files.value = event.files;
-
-    try {
-        const imageNames = await axios.get(`http://localhost:3002/api/images/${product.value.id}`);
-        if (imageNames.status === 200) {
-            imageNames.data.map(async (image) => {
-                const response = await axios.get(`http://localhost:3002/img/${product.value.id}/${image}`, {
-                    responseType: 'blob',
+            // Add new user
+            if (isUpdate.value === false) {
+                userResponse = await axios.post('http://localhost:3002/api/users/', datas);
+            }
+            // Update user
+            else {
+                userResponse = await axios.put(`http://localhost:3002/api/users/${userId.value}`, datas);
+            }
+            if (userResponse.status === 200) {
+                if (userResponse.data.uname) {
+                    ctx.addIssue({
+                        path: ['uname'],
+                        message: 'Username already exists.',
+                    });
+                } else if (userResponse.data.email) {
+                    ctx.addIssue({
+                        path: ['email'],
+                        message: 'Email already exists.',
+                    });
+                } else {
+                    toast.add({ severity: 'success', summary: 'Updated Successfully.', life: 3000 });
+                    submitted.value = true;
+                    userDialog.value = false;
+                }
+            }
+            if (userResponse.status !== 201) {
+                ctx.addIssue({
+                    path: ['uname'],
+                    message: 'Form incomplete',
                 });
-                const blob = response.data;
-                const file = new File([blob], image, { type: blob.type });
-                file.objectURL = URL.createObjectURL(file);
-                files.value.push(file);
-            });
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    })
+));
+
+const onFormSubmit = ({ valid }) => {
+    if (valid) {
+        toast.add({ severity: 'success', summary: 'Updated Successfully.', life: 3000 });
+    }
+};
+
+
+const deleteUser = async () => {
+    
+    try {
+        const response = await axios.delete(`http://localhost:3002/api/users/${userId.value}`);
+        if (response.status === 204) {
+            users.value = users.value.filter(val => val.id !== userId.value);
+            toast.add({ severity: 'success', summary: 'Successful', detail: 'User Deleted', life: 3000 });
+            deleteUserDialog.value = false;
+        } else {
+            console.error('Failed to delete user');
+            toast.add({ severity: 'error', summary: 'Error', detail: 'User Not Deleted', life: 3000 });
         }
     } catch (error) {
-        console.error("Client can't get Images: ", error);
+        console.error("Client can't delete users: ", error);
+        toast.add({ severity: 'error', summary: 'Error', detail: 'User Not Deleted', life: 3000 });
     }
 
+};
 
-    // console.log(files.value, 'fgile');
+// Delete users
+const deleteSelectedUsers = async () => {
+
+    for (const user of selectedUsers.value) {
+        try {
+            console.log(user);
+            await axios.delete(`http://localhost:3002/api/users/${user.id}`);
+        } catch (error) {
+            console.error(`Failed to delete user with ID: ${user.id}`, error);
+            toast.add({ severity: 'error', summary: 'Error', detail: 'user Not Deleted', life: 3000 });
+        }
+    }
+    users.value = users.value.filter(val => !selectedUsers.value.includes(val));
+    deleteUsersDialog.value = false;
+    selectedUsers.value = null;
+    toast.add({ severity: 'success', summary: 'Successful', detail: 'users Deleted', life: 3000 });
+
 };
 
 // Dialog Operations
 
 const openNew = () => {
-    product.value = {};
+    isUpdate.value = false;
+
+    userId.value = null;
+    uname.value = null;
+    email.value = null;
+    password.value = null;
+    passwordConfirm.value = null;
+    address.value = null;
+    selectedCounty.value = null;
+    selectedDistrict.value = null;
+
     submitted.value = false;
-    productDialog.value = true;
+    userDialog.value = true;
 };
+
+const editUser = async (prod) => {
+    isUpdate.value = true;
+
+    userId.value = prod.id;
+    uname.value = prod.uname;
+    email.value = prod.email;
+    password.value = prod.password;
+    passwordConfirm.value = prod.password;
+    address.value = prod.address.address;
+    selectedCounty.value = prod.address.county;
+    selectedDistrict.value = prod.address.district;
+
+    // initialValues.value = {
+    //     uname: prod.uname,
+    //     email: prod.email,
+    //     password: prod.password,
+    //     address: {
+    //         address: prod.address.address,
+    //         county: prod.address.county,
+    //         district: prod.address.district,
+    //     }
+    // }
+
+    console.log(initialValues.value);
+
+    submitted.value = false;
+    userDialog.value = true;
+};
+
 const hideDialog = () => {
-    productDialog.value = false;
+    userDialog.value = false;
     submitted.value = false;
 };
-const editProduct = async (prod) => {
-    product.value = { ...prod };
 
-    // GET IMAGES: Unsolved Issue: Cannot render images, except running at onImageSelect
-
-    productDialog.value = true;
-};
-
-const confirmDeleteProduct = (prod) => {
-    product.value = prod;
-    deleteProductDialog.value = true;
+const confirmDeleteuser = (prod) => {
+    userId.value = prod.id;
+    deleteUserDialog.value = true;
 };
 
 const confirmDeleteSelected = () => {
-    deleteProductsDialog.value = true;
-};
-
-const saveProduct = async () => {
-
-    submitted.value = true;
-    product.value.category = product.value.category.label;
-
-    if (!product?.value.name?.trim()) {
-        toast.add({ severity: 'error', summary: 'Warning', detail: 'Information incomplete', life: 3000 });
-        return;
-    };
-    if (!product?.value.description?.trim()) {
-        toast.add({ severity: 'error', summary: 'Warning', detail: 'Information incomplete', life: 3000 });
-        return;
-    };
-    if (!product?.value.price) {
-        toast.add({ severity: 'error', summary: 'Warning', detail: 'Information incomplete', life: 3000 });
-        return;
-    };
-    if (!product?.value.quantity) {
-        toast.add({ severity: 'error', summary: 'Warning', detail: 'Information incomplete', life: 3000 });
-        return;
-    };
-    if (!product?.value.category?.trim()) {
-        toast.add({ severity: 'error', summary: 'Warning', detail: 'Information incomplete', life: 3000 });
-        return;
-    };
-
-    if (product.value.id) {
-        await updateProduct();
-    }
-    else {
-        await addProduct();
-    }
-
-    productDialog.value = false;
-    product.value = {};
-};
-
-
-// Utilities
-
-const findIndexById = (id) => {
-    let index = -1;
-    for (let i = 0; i < products.value.length; i++) {
-        if (products.value[i].id === id) {
-            index = i;
-            break;
-        }
-    }
-    return index;
-};
-
-const formatCurrency = (value) => {
-    if (value)
-        return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
-    return;
+    deleteUsersDialog.value = true;
 };
 
 const exportCSV = () => {
     dt.value.exportCSV();
 };
 
-
 // Column Utilities
-
-const getStatusLabel = (quantity) => {
-    if (quantity == 0) {
-        return 'danger';
-    }
-    if (!quantity) {
-        return 'danger';
-    }
-    if (quantity <= 2) {
-        return 'warn';
-    }
-    if (quantity > 2) {
-        return 'success';
-    }
-}
-
-const getInventoryStatus = (quantity) => {
-    if (quantity == 0) {
-        return `${quantity}: OUTOFSTOCK`;
-    }
-    if (!quantity) {
-        return 'ERROR'
-    }
-    if (quantity <= 2) {
-        return `${quantity}: LOWSTOCK`;
-    }
-    if (quantity > 2) {
-        return `${quantity}: INSTOCK`;
-    }
-}
-
-const countRating = (data) => {
-    if (data.ratingCount == 0) {
-        data.ratingCount = 1
-    }
-    return Math.round(data.ratingScore / data.ratingCount)
-}
 
 const size = ref({ label: 'Normal', value: 'null' });
 const sizeOptions = ref([
@@ -331,9 +331,6 @@ const sizeOptions = ref([
     { label: 'Large', value: 'large' }
 ]);
 
-const deleteImage = () => {
-    files.value = [];
-}
 </script>
 <template>
     <div class="mt-5">
@@ -344,16 +341,16 @@ const deleteImage = () => {
         </Card>
         <Toast />
         <div class="mt-4">
-            <DataTable ref="dt" v-model:selection="selectedProducts" :value="products" dataKey="id" :paginator="true"
+            <DataTable ref="dt" v-model:selection="selectedUsers" :value="users" dataKey="id" :paginator="true"
                 :rows="10" :filters="filters" :size="size.value" stripedRows resizableColumns columnResizeMode="expand"
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                 :rowsPerPageOptions="[5, 10, 25]"
-                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} products">
+                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} users">
                 <template #header>
                     <div class="flex flex-wrap gap-3 justify-content-center">
                         <Button label="New" icon="pi pi-plus" @click="openNew" />
                         <Button label="Delete" icon="pi pi-trash" severity="danger" outlined
-                            @click="confirmDeleteSelected" :disabled="!selectedProducts || !selectedProducts.length" />
+                            @click="confirmDeleteSelected" :disabled="!selectedUsers || !selectedUsers.length" />
                         <SelectButton v-model="size" :options="sizeOptions" optionLabel="label" dataKey="label" />
                         <IconField>
                             <InputIcon>
@@ -370,114 +367,142 @@ const deleteImage = () => {
                 <Column selectionMode="multiple" style="width: 3rem" :exportable="false"></Column>
                 <Column :exportable="false" style="min-width: 8rem">
                     <template #body="slotProps">
-                        <Button icon="pi pi-pencil" outlined rounded class="mr-2"
-                            @click="editProduct(slotProps.data)" />
+                        <Button icon="pi pi-pencil" outlined rounded class="mr-2" @click="editUser(slotProps.data)" />
                         <Button icon="pi pi-trash" outlined rounded severity="danger"
-                            @click="confirmDeleteProduct(slotProps.data)" />
+                            @click="confirmDeleteuser(slotProps.data)" />
                     </template>
                 </Column>
-                <Column field="name" header="Name" sortable style="min-width: 10rem"></Column>
-                <Column header="Image">
+                <Column field="uname" header="Name" sortable style="min-width: 10rem"></Column>
+                <Column field="email" header="Email" sortable style="min-width: 6rem"></Column>
+                <Column field="password" header="Password" sortable style="min-width: 8rem"></Column>
+                <Column field="address.address" header="Address" sortable style="min-width: 8rem">
                     <template #body="slotProps">
-                        <img :src="`http://localhost:3002/img/${slotProps.data.id}/${slotProps.data.images[0]}`"
-                            :alt="slotProps.data.image" class="rounded" style="width: 64px" />
+                        {{ slotProps.data.address.address }}
                     </template>
                 </Column>
-                <Column field="price" header="Price" sortable style="min-width: 6rem">
+                <Column field="address.district" header="District" sortable style="min-width: 7rem">
                     <template #body="slotProps">
-                        {{ formatCurrency(slotProps.data.price) }}
+                        {{ slotProps.data.address.district }}
                     </template>
                 </Column>
-                <Column field="inventoryStatus" header="Quantity" sortable style="min-width: 8rem">
+                <Column field="address.county" header="County" sortable style="min-width: 7rem">
                     <template #body="slotProps">
-                        <Tag :value="getInventoryStatus(slotProps.data.quantity)"
-                            :severity="getStatusLabel(slotProps.data.quantity)" />
-                    </template>
-                </Column>
-                <Column field="category" header="Category" sortable style="min-width: 8rem"></Column>
-                <Column field="rating" header="Reviews" sortable style="min-width: 7rem">
-                    <template #body="slotProps">
-                        <Rating :modelValue="countRating(slotProps.data)" :readonly="true" />
+                        {{ slotProps.data.address.county }}
                     </template>
                 </Column>
             </DataTable>
         </div>
 
-        <Dialog v-model:visible="productDialog" :style="{ width: '80%' }" header="Product Details" :modal="true">
-            <div class="grid mt-3">
-                <div class="md:col-6 sm:col-12 col-12">
-                    <Button label="Delete" icon="pi pi-trash" class="p-button-danger" @click="deleteImage" />
-                    <FileUpload name="demo[]" customUpload @uploader="onImageUploadw()" :multiple="true"
-                        accept="image/*" :maxFileSize="10485760" @select="onImageSelect">
-                        <template #content="{ files }">
+        <Dialog v-model:visible="userDialog" :style="{ width: '80%' }" header="User Details" :modal="true">
+            <Form v-slot="$form" :resolver="resolver" :initialValues="initialValues" :validateOnValueUpdate="false"
+                @submit="onFormSubmit" class="flex flex-column gap-4 px-6">
+                <InputGroup>
+                    <InputGroupAddon>
+                        <i class="pi pi-user"></i>
+                    </InputGroupAddon>
+                    <InputText v-model="uname" name="uname" placeholder="Username" />
+                </InputGroup>
+                <Message v-if="$form.uname?.invalid" severity="error" size="small" variant="simple">
+                    {{ $form.uname.error?.message }}</Message>
 
+                <InputGroup>
+                    <InputGroupAddon>
+                        <i class="pi pi-envelope"></i>
+                    </InputGroupAddon>
+                    <InputText v-model="email" name="email" placeholder="Email" />
+                </InputGroup>
+                <Message v-if="$form.email?.invalid" severity="error" size="small" variant="simple">
+                    {{ $form.email.error?.message }}</Message>
+
+                <InputGroup>
+                    <InputGroupAddon>
+                        <i class="pi pi-key"></i>
+                    </InputGroupAddon>
+                    <Password v-model="password" name="password" type="text" placeholder="Password"
+                        :formControl="{ validateOnValueUpdate: true }" toggleMask fluid>
+                        <template #header>
+                            <div class="font-semibold text-xm mb-4">Pick a password</div>
                         </template>
-                        <template #empty>
-                            <span>Drag and drop files to here to upload. The server will sync with current arrangement.
-                                The first picture here will be shown as main picture.</span>
+                        <template #footer>
+                            <Divider />
+                            <Message v-if="$form.password?.invalid" v-for="(error, index) of $form.password.errors"
+                                :key="index" severity="error" size="small" variant="simple">{{ error.message }}
+                            </Message>
                         </template>
-                    </FileUpload>
+                    </Password>
+                </InputGroup>
+                <Message v-if="$form.password?.invalid" severity="error" size="small" variant="simple">
+                    {{ $form.password.error?.message }}</Message>
+
+                <InputGroup>
+                    <InputGroupAddon>
+                        <i class="pi pi-key"></i>
+                    </InputGroupAddon>
+                    <Password v-model="passwordConfirm" name="passwordConfirm" type="text"
+                        placeholder="Confirm Password" :formControl="{ validateOnValueUpdate: true }" :feedback="false"
+                        toggleMask fluid />
+                </InputGroup>
+                <Message v-if="$form.passwordConfirm?.invalid" severity="error" size="small" variant="simple">
+                    {{ $form.passwordConfirm.error?.message }}</Message>
+
+                <InputGroup>
+                    <InputGroupAddon>
+                        <i class="pi pi-address-book"></i>
+                    </InputGroupAddon>
+                    <InputText v-model="address" name="address" placeholder="Address" />
+                </InputGroup>
+                <Message v-if="$form.address?.invalid" class='col-6' severity="error" size="small" variant="simple">
+                    {{
+                        $form.address.error?.message }}</Message>
+
+                <InputGroup>
+                    <InputGroupAddon>
+                        <i class="pi pi-map"></i>
+                    </InputGroupAddon>
+                    <Select v-model="selectedCounty" name="county" :options="counties" placeholder="Counties" fluid />
+
+                    <InputGroupAddon>
+                        <i class="pi pi-map"></i>
+                    </InputGroupAddon>
+                    <Select v-model="selectedDistrict" name="district" :options="districts" placeholder="District"
+                        fluid />
+                </InputGroup>
+                <div class="grid">
+                    <Message v-if="$form.county?.invalid" class='col-6' severity="error" size="small" variant="simple">
+                        {{
+                            $form.county.error?.message }}</Message>
+                    <Message v-if="$form.district?.invalid" class='col-6' severity="error" size="small"
+                        variant="simple">{{
+                            $form.district.error?.message }}</Message>
                 </div>
-                <div class="md:col-6 sm:col-12 col-12">
-                    <div class="field">
-                        <label for="name" class="block font-bold mb-3">Name</label>
-                        <InputText id="name" v-model.trim="product.name" required="true" autofocus
-                            :invalid="submitted && !product.name" fluid />
-                        <small v-if="submitted && !product.name" class="text-red-500">Name is required</small>
-                    </div>
-                    <div class="field">
-                        <label for="description" class="block font-bold mb-3">Description</label>
-                        <Textarea id="description" v-model="product.description" required="true" rows="3" cols="20"
-                            :invalid="submitted && !product.description" fluid />
-                        <small v-if="submitted && !product.description" class="text-red-500">Description is
-                            required</small>
-                    </div>
+
+                <div class="flex justify-content-end">
+                    <Button label="Cancel" icon="pi pi-times" text @click="hideDialog" />
+                    <Button label="Save" icon="pi pi-check" type="submit" severity="primary" />
                 </div>
-                <div class="col-4 field">
-                    <label for="price" class="block font-bold mb-3">Price</label>
-                    <InputNumber id="price" v-model="product.price" mode="currency" currency="USD" locale="en-US"
-                        :invalid="submitted && !product.price" fluid />
-                    <small v-if="submitted && !product.price" class="text-red-500">Price is required</small>
-                </div>
-                <div class="col-4 field">
-                    <label for="quantity" class="block font-bold mb-3">Quantity</label>
-                    <InputNumber id="quantity" v-model="product.quantity" integeronly
-                        :invalid="submitted && !product.quantity" fluid />
-                    <small v-if="submitted && !product.quantity" class="text-red-500">Quantity is required</small>
-                </div>
-                <div class="col-4 field">
-                    <label for="category" class="block font-bold mb-3">Category</label>
-                    <Select id="category" v-model="product.category" :options="statuses" optionLabel="label"
-                        placeholder="Select a Status" :invalid="submitted && !product.category" fluid></Select>
-                    <small v-if="submitted && !product.category" class="text-red-500">Category is required</small>
-                </div>
+                <Toast />
+            </Form>
+        </Dialog>
+
+        <Dialog v-model:visible="deleteUserDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
+            <div class="flex items-center gap-4">
+                <i class="pi pi-exclamation-triangle !text-3xl" />
+                <span v-if="user">Are you sure you want to delete <b>{{ user.name }}</b>?</span>
             </div>
-
             <template #footer>
-                <Button label="Cancel" icon="pi pi-times" text @click="hideDialog" />
-                <Button label="Save" icon="pi pi-check" @click="saveProduct" />
+                <Button label="No" icon="pi pi-times" text @click="deleteUserDialog = false" />
+                <Button label="Yes" icon="pi pi-check" @click="deleteUser" />
             </template>
         </Dialog>
 
-        <Dialog v-model:visible="deleteProductDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
+        <Dialog v-model:visible="deleteUsersDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
             <div class="flex items-center gap-4">
                 <i class="pi pi-exclamation-triangle !text-3xl" />
-                <span v-if="product">Are you sure you want to delete <b>{{ product.name }}</b>?</span>
+                <span v-if="user">Are you sure you want to delete the selected users?</span>
             </div>
             <template #footer>
-                <Button label="No" icon="pi pi-times" text @click="deleteProductDialog = false" />
-                <Button label="Yes" icon="pi pi-check" @click="deleteProduct" />
-            </template>
-        </Dialog>
-
-        <Dialog v-model:visible="deleteProductsDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
-            <div class="flex items-center gap-4">
-                <i class="pi pi-exclamation-triangle !text-3xl" />
-                <span v-if="product">Are you sure you want to delete the selected products?</span>
-            </div>
-            <template #footer>
-                <Button label="No" icon="pi pi-times" text @click="deleteProductsDialog = false" />
-                <Button label="Yes" icon="pi pi-check" text @click="deleteSelectedProducts" />
+                <Button label="No" icon="pi pi-times" text @click="deleteUsersDialog = false" />
+                <Button label="Yes" icon="pi pi-check" text @click="deleteSelectedUsers" />
             </template>
         </Dialog>
     </div>
