@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import axios from 'axios';
 import { useGlobalStore } from '@/store/useGlobalStore';
 import { useRouter } from 'vue-router';
@@ -18,11 +18,13 @@ const showPurchaseSuccessDialog = ref(false);
 const showPurchaseFailedDialog = ref(false);
 
 const isLoggedIn = ref(false);
- 
-onMounted(async () => {
 
+watch(() => store.getUname, () => {
   isLoggedIn.value = store.getUname ? true : false
-  
+  console.log(isLoggedIn.value);
+})
+onMounted(async () => {
+  console.log(store.getUname);
   try {
     const response = await axios.get('http://localhost:3002/api/products');
     products.value = response.data;
@@ -87,32 +89,38 @@ const getInventoryStatus = (quantity) => {
 
 
 const checkAccount = async () => {
-    if (!isLoggedIn.value) {
-        router.push('/user/login');
-        return false;
-    }
-    else {
-        return true
-    }
+  console.log(isLoggedIn.value);
+  if (!isLoggedIn.value) {
+    router.push('/user/login');
+    return false;
+  }
+  else {
+    return true
+  }
 }
 
 const purchase = async () => {
-  await checkAccount(); // 檢查是否已登入
+  try {
 
-  const success = false;
+    console.log('purchase');
+    await checkAccount();
+    const data = {
+      user_id: store.getUserId,
+      item_id: product.value.id,
+      quantity: selectProductCount.value,
+    }
 
-  const data = {
-    email: store.getEmail,
-    productID: product.value.id,
-    productCount: selectProductCount.value
-  }
+    const response = await axios.post('http://localhost:3002/api/purchase', data);
 
-  // kl： 處理購物邏輯
-  showDialog.value = false;
-  if (success) {
-    showPurchaseSuccessDialog.value = true;
-  } else {
+    showDialog.value = false;
+    if (response.status === 201) {
+      showPurchaseSuccessDialog.value = true;
+      return
+    }
+    
     showPurchaseFailedDialog.value = true;
+  } catch (error) {
+    console.error(error);
   }
 }
 
@@ -249,24 +257,28 @@ const rateDisliked = async () => {
       </div>
     </Dialog>
 
-    <Dialog v-model:visible="showAddCartSuccessDialog" :modal="true" :style="{ width: '50vw', maxWidth: '50rem', height: '50vh' }"
-      :header="Information" @close="closeAddCartSuccess" @after-hide="closeAddCartSuccess">
+    <Dialog v-model:visible="showAddCartSuccessDialog" :modal="true"
+      :style="{ width: '50vw', maxWidth: '50rem', height: '50vh' }" :header="Information" @close="closeAddCartSuccess"
+      @after-hide="closeAddCartSuccess">
       <div class="text-center">Successfully Added to Cart</div>
     </Dialog>
 
-    <Dialog v-model:visible="showAddCartFailedDialog" :modal="true" :style="{ width: '50vw', maxWidth: '50rem', height: '50vh' }"
-      :header="Information" @close="closeAddCartFailed" @after-hide="closeAddCartFailed">
+    <Dialog v-model:visible="showAddCartFailedDialog" :modal="true"
+      :style="{ width: '50vw', maxWidth: '50rem', height: '50vh' }" :header="Information" @close="closeAddCartFailed"
+      @after-hide="closeAddCartFailed">
       <div class="text-center">Failed Adding to Cart</div>
     </Dialog>
 
-    <Dialog v-model:visible="showPurchaseSuccessDialog" :modal="true" :style="{ width: '50vw', maxWidth: '50rem', height: '50vh' }"
-      :header="Information" @close="closePurchaseSuccess" @after-hide="closePurchaseSuccess">
-      <div class="text-center">Successfully Added to Cart</div>
+    <Dialog v-model:visible="showPurchaseSuccessDialog" :modal="true"
+      :style="{ width: '50vw', maxWidth: '50rem', height: '50vh' }" :header="Information" @close="closePurchaseSuccess"
+      @after-hide="closePurchaseSuccess">
+      <div class="text-center">Successfully Purchased</div>
     </Dialog>
 
-    <Dialog v-model:visible="showPurchaseFailedDialog" :modal="true" :style="{ width: '50vw', maxWidth: '50rem', height: '50vh' }"
-      :header="Information" @close="closePurchaseFailed" @after-hide="closePurchaseFailed">
-      <div class="text-center">Failed Adding to Cart</div>
+    <Dialog v-model:visible="showPurchaseFailedDialog" :modal="true"
+      :style="{ width: '50vw', maxWidth: '50rem', height: '50vh' }" :header="Information" @close="closePurchaseFailed"
+      @after-hide="closePurchaseFailed">
+      <div class="text-center">Purchase Failed</div>
     </Dialog>
   </div>
 </template>

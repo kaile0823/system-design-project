@@ -1,11 +1,25 @@
 import ProductSqliteModel from '../models/productSqliteModel.js'; // 引入 ProductSqlite 模型
 import CartSqliteModel from '../models/cartSqliteModel.js'; // 引入 Cart 模型
+import * as purchase from '../services/purchaseService.js';
+
+// 直接購買
+export const purchaseController = async (req, res) => {
+    const data = req.body;
+    try {
+        const result = await purchase.purchaseService(data);
+        if (result.status) {
+            return res.sendStatus(201);
+        }
+        return res.status(400).json({ error: ` Server can't purchase Product: ${result.message}` });
+    }
+    catch (error) {
+        console.log(error);
+    }
+}
 
 
 // 購買下訂單
-export const purchaseController = async (req, res) => {
-    const userId = req.user.id; // 取得使用者 ID
-
+export const cartPurchaseController = async (req, res) => {
     try {
         const cartItems = await CartSqliteModel.findAll({ where: { user_id: userId } });
 

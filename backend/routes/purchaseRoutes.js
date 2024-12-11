@@ -1,9 +1,9 @@
 import express from 'express';
-import { purchaseController } from '../controllers/purchaseController.js';
-import { authenticate } from '../middleware/authMiddleware.js';
+import * as purchase from '../controllers/purchaseController.js';
 
 const router = express.Router();
 
-router.post('/purchase', authenticate, purchaseController);
+router.post('/purchase', purchase.purchaseController); 
+router.post('/cartPurchase', purchase.cartPurchaseController); 
 
 export default router;

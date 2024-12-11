@@ -11,6 +11,8 @@ import ProductSqliteModel from './models/productSqliteModel.js';
 import CartSqliteModel from './models/cartSqliteModel.js';
 import PurchaseSqliteModel from './models/purchaseSqliteModel.js';
 
+import establishRelations from './models/relation.js';
+
 import userRoutes from './routes/userRoutes.js';
 import productRoutes from './routes/productRoutes.js';
 import settingRoutes from './routes/settingRoutes.js';
@@ -52,6 +54,7 @@ const syncModels = async () => {
     }
 };
 await syncModels();
+establishRelations();
 
 // Middleware
 app.use(express.json());
