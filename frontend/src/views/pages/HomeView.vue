@@ -7,7 +7,7 @@ onMounted(() => {
   // Access the element directly
   if (imageTrack.value) {
     imageTrack.value.dataset.mouseDownAt = "0";  // Modify dataset attributes if needed
-    console.log(imageTrack.value); // Log or manipulate the element
+    // console.log(imageTrack.value); // Log or manipulate the element
   }
 });
 // const track = document.getElementById("imageTrack");

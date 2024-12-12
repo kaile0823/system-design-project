@@ -1,14 +1,13 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
-import UserView from '@/views/user/UserView.vue'
 import MainView from '@/views/MainView.vue'
 
-import PrimeDevView from '@/views/pages/DevView.vue'
-import PrimeHomeView from '@/views/pages/HomeView.vue'
-import PrimeProductView from '@/views/pages/ProductView.vue'
-import PrimePostView from '@/views/pages/PostView.vue'
-import PrimeAdminView from '@/views/pages/AdminView.vue'
+import HomeView from '@/views/pages/HomeView.vue'
+import ProductView from '@/views/pages/ProductView.vue'
+import PostView from '@/views/pages/PostView.vue'
+import AdminView from '@/views/pages/AdminView.vue'
 import CartView from '@/views/pages/CartView.vue'
+import UserView from '@/views/pages/UserView.vue'
 
 import UsersView from '@/views/adminpages/UsersView.vue'
 import DatabaseView from '@/views/adminpages/ItemsView.vue'
@@ -17,18 +16,30 @@ import CartsView from '@/views/adminpages/CartsView.vue'
 import StatisticsView from '@/views/adminpages/StatisticsView.vue'
 import SettingsView from '@/views/adminpages/SettingsView.vue'
 
+import RegisterView from '@/views/user/RegisterView.vue'
+import LogInView from '@/views/user/LogInView.vue'
+import ForgotPasswordView from '@/views/user/ForgotPasswordView.vue'
+import ResetPasswordView from '@/views/user/ResetPasswordView.vue'
+
 const routes = [
-  { path: '/', component: UserView },
-  {
-    path: '/main', component: MainView,
+  { path: '/user',
     children: [
-      { path: 'dev', component: PrimeDevView },
-      { path: '', component: PrimeHomeView },
-      { path: 'product', component: PrimeProductView },
-      { path: 'post', component: PrimePostView },
+      { path: 'login', component: LogInView },
+      { path: 'register', component: RegisterView },
+      { path: 'forgot-password', component: ForgotPasswordView },
+      { path: 'reset-password', component: ResetPasswordView },
+    ]
+   },
+  {
+    path: '/', component: MainView,
+    children: [
+      { path: '', component: HomeView },
+      { path: 'product', component: ProductView },
+      { path: 'post', component: PostView },
       { path: 'cart', component: CartView },
+      { path: 'user', component: UserView },
       {
-        path: 'admin', component: PrimeAdminView,
+        path: 'admin', component: AdminView,
         children: [
           { path: 'users', component: UsersView },
           { path: 'items', component: DatabaseView },

@@ -4,26 +4,6 @@ import { ref, onMounted } from 'vue';
 import { FilterMatchMode } from '@primevue/core/api';
 import { useToast } from 'primevue/usetoast';
 import { ProductService } from '@/service/ProductService';
-
-import Button from 'primevue/button';
-import InputText from 'primevue/inputtext';
-import InputNumber from 'primevue/inputnumber';
-import Dialog from 'primevue/dialog';
-import DataTable from 'primevue/datatable';
-import Column from 'primevue/column';
-import ColumnGroup from 'primevue/columngroup';   // optional
-import Row from 'primevue/row';                   // optional
-import Select from 'primevue/select';
-import Textarea from 'primevue/textarea';
-import Tag from 'primevue/tag';
-import Rating from 'primevue/rating';
-import IconField from 'primevue/iconfield';
-import InputIcon from 'primevue/inputicon';
-import FileUpload from 'primevue/fileupload';
-import SelectButton from 'primevue/selectbutton';
-import Card from 'primevue/card';
-import { Toast } from 'primevue';
-
 import axios from 'axios';
 
 // Initialization
@@ -55,9 +35,21 @@ const fetchProducts = async () => {
     } catch (error) {
         console.error("Client can't get Products: ", error);
     }
+
+    // console.log(products.value);
 };
 
-onMounted(fetchProducts);
+const renameFileObject = (originalFile, newName) => {
+    const originalName = originalFile.name;
+    const extension = originalName.substring(originalName.lastIndexOf('.'));
+    const newFileName = `${newName}${extension}`;
+
+    return new File([originalFile], newFileName, { type: originalFile.type });
+}
+
+onMounted(async () => {
+    await fetchProducts();
+});
 
 // Update based on server
 const statuses = ref([
@@ -70,7 +62,7 @@ const statuses = ref([
 // Create product and push to server
 const addProduct = async () => {
 
-    product.value.image = JSON.stringify(product.value.image);
+    // product.value.image = JSON.stringify(product.value.image);
 
     try {
         const response = await axios.post('http://localhost:3002/api/products', product.value);
@@ -80,10 +72,12 @@ const addProduct = async () => {
         } else {
             throw new Error('Failed to create product');
         }
+        await onImageUpload();
     } catch (error) {
         console.error("Client can't add Products: ", error);
         toast.add({ severity: 'error', summary: 'Error', detail: 'Product Not Created', life: 3000 });
     }
+
 }
 
 // Update product
@@ -91,16 +85,18 @@ const updateProduct = async () => {
     try {
         const id = product.value.id;
         const response = await axios.put(`http://localhost:3002/api/products/${id}`, product.value);
-        if (response.status === 200) {
+        if (response.status === 201) {
             products.value[findIndexById(product.value.id)] = product.value;
             toast.add({ severity: 'success', summary: 'Successful', detail: 'Product Updated', life: 3000 });
         } else {
             throw new Error('Failed to update product');
         }
+        await onImageUpload();
     } catch (error) {
         console.error("Client can't update Products: ", error);
         toast.add({ severity: 'error', summary: 'Error', detail: 'Product Not Updated', life: 3000 });
     }
+
 }
 
 // Delete product
@@ -148,14 +144,55 @@ const deleteSelectedProducts = async () => {
 
 const files = ref([]);
 
-const onImageUpload = () => {
-    toast.add({ severity: 'info', summary: 'Success', detail: 'File Uploaded', life: 3000 });
+const onImageUpload = async () => {
+
+    console.log(files.value);
+
+    let count = 0;
+    try {
+
+        await axios.delete(`http://localhost:3002/api/images/${product.value.id}`);
+
+        files.value.map(async (file) => {
+            const id = product.value.id;
+            const newName = `${id}_${count}`;
+            count += 1;
+            const renamedFile = renameFileObject(file, newName);
+            const formData = new FormData();
+            formData.append("image", renamedFile);
+            const uploadResponse = await axios.post('http://localhost:3002/api/images', formData, {
+                headers: { "Content-Type": "multipart/form-data" },
+            });
+            toast.add({ severity: 'info', summary: 'Success', detail: 'File Uploaded', life: 3000 });
+        })
+    } catch (error) {
+        console.error("Error uploading image:", error);
+    }
 };
 
-const onImageSelect = (event) => {
+const onImageSelect = async (event) => {
+
     files.value = event.files;
-    files.value.pop();
-    console.log(files.value);
+
+    try {
+        const imageNames = await axios.get(`http://localhost:3002/api/images/${product.value.id}`);
+        if (imageNames.status === 200) {
+            imageNames.data.map(async (image) => {
+                const response = await axios.get(`http://localhost:3002/img/${product.value.id}/${image}`, {
+                    responseType: 'blob',
+                });
+                const blob = response.data;
+                const file = new File([blob], image, { type: blob.type });
+                file.objectURL = URL.createObjectURL(file);
+                files.value.push(file);
+            });
+        }
+    } catch (error) {
+        console.error("Client can't get Images: ", error);
+    }
+
+
+    // console.log(files.value, 'fgile');
 };
 
 // Dialog Operations
@@ -169,10 +206,14 @@ const hideDialog = () => {
     productDialog.value = false;
     submitted.value = false;
 };
-const editProduct = (prod) => {
+const editProduct = async (prod) => {
     product.value = { ...prod };
+
+    // GET IMAGES: Unsolved Issue: Cannot render images, except running at onImageSelect
+
     productDialog.value = true;
 };
+
 const confirmDeleteProduct = (prod) => {
     product.value = prod;
     deleteProductDialog.value = true;
@@ -182,7 +223,7 @@ const confirmDeleteSelected = () => {
     deleteProductsDialog.value = true;
 };
 
-const saveProduct = () => {
+const saveProduct = async () => {
 
     submitted.value = true;
     product.value.category = product.value.category.label;
@@ -209,10 +250,10 @@ const saveProduct = () => {
     };
 
     if (product.value.id) {
-        updateProduct();
+        await updateProduct();
     }
     else {
-        addProduct();
+        await addProduct();
     }
 
     productDialog.value = false;
@@ -290,6 +331,9 @@ const sizeOptions = ref([
     { label: 'Large', value: 'large' }
 ]);
 
+const deleteImage = () => {
+    files.value = [];
+}
 </script>
 <template>
     <div class="mt-5">
@@ -335,7 +379,7 @@ const sizeOptions = ref([
                 <Column field="name" header="Name" sortable style="min-width: 10rem"></Column>
                 <Column header="Image">
                     <template #body="slotProps">
-                        <img :src="`https://primefaces.org/cdn/primevue/images/product/${slotProps.data.images}`"
+                        <img :src="`http://localhost:3002/img/${slotProps.data.id}/${slotProps.data.images[0]}`"
                             :alt="slotProps.data.image" class="rounded" style="width: 64px" />
                     </template>
                 </Column>
@@ -362,19 +406,17 @@ const sizeOptions = ref([
         <Dialog v-model:visible="productDialog" :style="{ width: '80%' }" header="Product Details" :modal="true">
             <div class="grid mt-3">
                 <div class="md:col-6 sm:col-12 col-12">
-                    <img v-if="product.image"
-                        :src="`https://primefaces.org/cdn/primevue/images/product/${product.image}`"
-                        :alt="product.image" style="max-width: 100%" />
-                    <div v-else>
-                        <!-- ## TODO image picker -->
-                        <FileUpload name="demo[]" @upload="onImageUpload($event)" :multiple="true" accept="image/*"
-                            :maxFileSize="10485760" @select="onImageSelect">
-                            <template #content="{ files }"></template>
-                            <template #empty>
-                                <span>Drag and drop files to here to upload.</span>
-                            </template>
-                        </FileUpload>
-                    </div>
+                    <Button label="Delete" icon="pi pi-trash" class="p-button-danger" @click="deleteImage" />
+                    <FileUpload name="demo[]" customUpload @uploader="onImageUploadw()" :multiple="true"
+                        accept="image/*" :maxFileSize="10485760" @select="onImageSelect">
+                        <template #content="{ files }">
+
+                        </template>
+                        <template #empty>
+                            <span>Drag and drop files to here to upload. The server will sync with current arrangement.
+                                The first picture here will be shown as main picture.</span>
+                        </template>
+                    </FileUpload>
                 </div>
                 <div class="md:col-6 sm:col-12 col-12">
                     <div class="field">
