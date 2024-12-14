@@ -75,7 +75,7 @@ const getStatusLabel = (quantity) => {
 const getInventoryStatus = (quantity) => {
   if (quantity == 0) {
     return `${quantity}: OUTOFSTOCK`;
-  }
+  }a
   if (!quantity) {
     return 'ERROR'
   }
@@ -125,17 +125,27 @@ const purchase = async () => {
 }
 
 const addToCart = async () => {
-  await checkAccount(); // 檢查是否已登入/
+  await checkAccount(); // 檢查是否已登入
 
-  const success = false;
+  let success = false;
 
   const data = {
     email: store.getEmail,
     productID: product.value.id,
     productCount: selectProductCount.value
+  };
+
+  try {
+    // 發送請求到後端
+    const response = await axios.post('http://localhost:3002/api/addcart', data);
+    if (response.status === 200) {
+      success = true;
+    }
+  } catch (error) {
+    console.error('Failed to add product to cart:', error);
   }
 
-  // kl： 處理購物車邏輯
+  // 關閉對話框並顯示結果
   showDialog.value = false;
   if (success) {
     showAddCartSuccessDialog.value = true;

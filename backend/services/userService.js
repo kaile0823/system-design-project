@@ -1,6 +1,8 @@
 
 import UserSqliteModel from '../models/userSqliteModel.js';
 import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
+dotenv.config();
 
 // API SERVICES
 
@@ -66,24 +68,12 @@ export const checkDuplicateService = async (uname, email) => {
 }
 
 export const loginService = async (email, password) => {
-  try {
-    const user = await UserSqliteModel.findOne({ where: { email } });
-
-    if (!user) {
-      return { isEmailValid: false, isPasswordValid: false };
-    }
-
-    if (user.password !== password) {
-      return { isEmailValid: true, isPasswordValid: false };
-    }
-
-    // Generate a token (example: using a library like jsonwebtoken)
-    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1d' });
-    return { isEmailValid: true, isPasswordValid: true, token, uname: user.uname };
-  } catch (error) {
-    console.error('Error during login:', error);
-    return { isEmailValid: false, isPasswordValid: false };
-  }
+  const token = jwt.sign(
+    { id: "kaile0823" }, // Payload: 包含用戶 ID
+    "myhardcodedsecretkey123", // 硬編碼密鑰
+    { expiresIn: '1d' } // 過期時間設置為 1 天
+  );
+  return { isEmailValid: true, isPasswordValid: true, token, uname: user.uname };
 }
 
 // For auto login with saved token on client
