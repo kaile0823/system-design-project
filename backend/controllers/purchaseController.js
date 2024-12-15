@@ -22,7 +22,7 @@ export const purchaseController = async (req, res) => {
 // 購買下訂單
 export const cartPurchaseController = async (req, res) => {
     try {
-        const userId = req.body.userId;
+        const { userId } = req.body;
         const cartItems = await CartSqliteModel.findAll({ where: { user_id: userId } });
 
         // 檢查庫存
@@ -62,7 +62,10 @@ export const cartPurchaseController = async (req, res) => {
         }
 
         await CartSqliteModel.destroy({ where: { user_id: userId } });
-        res.json({ message: 'Purchase completed' });
+
+        console.error('purchase completed');
+
+        res.status(200).json({ message: 'Purchase completed' });
     } catch (error) {
         console.error("Error processing purchase:", error);
         res.status(500).json({ message:"Error processing purchase:" });

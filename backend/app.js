@@ -69,5 +69,7 @@ app.use('/api', settingRoutes);
 app.use('/api', imageRoutes);
 app.use('/api', cartRoutes);
 app.use('/api', purchaseRoutes);
+await sequelize.sync({ force: false });
+
 
 export default app;

@@ -5,8 +5,8 @@ import { authenticate } from '../middleware/authMiddleware.js';
 const router = express.Router();
 
 router.post('/addcart',  addCartController);
-router.get('/getcart', getCartController);
+router.post('/getcart', getCartController);
 router.post('/checkcart', checkCartController);
-router.delete('/removecart/:id',removeItemFromCart);
+router.post('/removecart',removeItemFromCart);
 
 export default router;

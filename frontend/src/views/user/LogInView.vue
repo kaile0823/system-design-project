@@ -32,9 +32,19 @@ const resolver = ref(zodResolver(
     // Login result from server
     const response = await axios.post('http://localhost:3002/api/users/login', loginData);
 
+    if (!response.data?.isEmailValid) {
+      ctx.addIssue({
+        path: ['email'],
+        message: 'Email does not exist in server',
+      });
+    } else if (!response.data?.isPasswordValid) {
+      ctx.addIssue({
+        path: ['password'],
+        message: 'Password is incorrect',
+      });
+    }
 
-
-    if (1) {
+    if (response.data) {
       console.log(response.data);
       localStorage.setItem('token', response.data.token);
       store.setUname(response.data.uname);
@@ -42,6 +52,7 @@ const resolver = ref(zodResolver(
     }
   })
 ));
+
 
 // const resolver = ({ values }) => {
 //   const errors = {};

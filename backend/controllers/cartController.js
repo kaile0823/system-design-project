@@ -5,10 +5,13 @@ import CartSqliteModel from '../models/cartSqliteModel.js'; // 引入 Cart 模�
 
 export const addCartController = async (req, res) => {
     try {
-      const { email, productID, productCount } = req.body; // 解構前端送來的資料
+      const { user_id, email, productID, productCount } = req.body; // 解構前端送來的資料
   
-  
-      const user_id = "12345" // 從用戶記錄中獲取 user_id
+      const product = await ProductSqliteModel.findByPk(productID);
+      if (!product || product.quantity < productCount) {
+          return res.status(400).json({ message: `Item ${product ? product.name : ''} is out of stock` });
+      }
+      
   
       // 插入資料到 carts 表
       const newCartItem = await CartSqliteModel.create({
@@ -30,14 +33,44 @@ export const addCartController = async (req, res) => {
 
     // 獲取使用者的購物車資料
     export const getCartController = async (req, res) => {
-        const userId = 1; // 暂时硬编码为 1，用于测试
 
         try {
-            const cartItems = await Cart.findAll({
+            const { userId } = req.body; // 解構前端送來的資料
+
+
+
+
+
+            const cartItems = await CartSqliteModel.findAll({
                 where: { user_id: userId },
-                include: [{ model: ProductSqlite, attributes: ['name', 'price', 'description'] }] // 包含商品資訊
-            });
-            res.json(cartItems);
+                include: [{ 
+                 model: ProductSqliteModel, 
+                 as: 'Product',
+                attributes: ['name', 'price', 'description'] 
+                 }],
+                  raw: true, // 獲取原始查詢結果，展開嵌套結構
+                  nest: true // 適用於包含關聯時，展開時結構更清晰
+              });
+              
+            
+              const formattedItems = cartItems.map(item => ({
+                id: item.id,
+                user_id: item.user_id,
+                item_id: item.item_id,
+                quantity: item.quantity,
+                name: item.Product.name,
+                price: item.Product.price,
+                description: item.Product.description,
+            }));
+
+
+
+
+
+
+
+            console.error(formattedItems);
+            res.json(formattedItems);
         } catch (error) {
             console.error("Error fetching cart:", error);
             res.status(500).json({ message: 'Error fetching cart' });
@@ -91,18 +124,23 @@ export const addCartController = async (req, res) => {
     }
     export const removeItemFromCart = async (req, res) => {
         try {
-          const { id } = req.params; // 從路由參數獲取 item_id
-      
+          const { userId,itemId } = req.body;
+          
+          console.error("trigger");
           // 嘗試刪除資料庫中所有 item_id 匹配的記錄
           const deleteCount = await CartSqliteModel.destroy({
-            where: { item_id: id } // 根據 item_id 刪除
+            where: { 
+              user_id: userId, // 用戶 ID
+              item_id: itemId      // 商品 ID
+            }
           });
       
           // 判斷是否刪除成功
           if (deleteCount === 0) {
+            console.error("failed deleting item");
             return res.status(404).json({ message: 'No items found with the given item_id' });
           }
-      
+          console.error("success deleting item");
           // 刪除成功
           return res.status(200).json({ message: `${deleteCount} item(s) removed successfully` });
         } catch (error) {

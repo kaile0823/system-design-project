@@ -35,6 +35,10 @@ onMounted(async () => {
 
 // View details of a product card
 const viewDetails = (prop) => {
+  console.log(store.getUname);
+  isLoggedIn.value = store.getUname ? true : false;
+  console.log(isLoggedIn.value);
+  console.log("Product details triggered:", prop);
   product.value = prop;
   product.value.images.forEach(image => {
     images.value.push({ itemImageSrc: `http://localhost:3002/img/${prop.id}/${image}` });
@@ -75,7 +79,7 @@ const getStatusLabel = (quantity) => {
 const getInventoryStatus = (quantity) => {
   if (quantity == 0) {
     return `${quantity}: OUTOFSTOCK`;
-  }a
+  }
   if (!quantity) {
     return 'ERROR'
   }
@@ -130,6 +134,7 @@ const addToCart = async () => {
   let success = false;
 
   const data = {
+    user_id:store.getUserId,
     email: store.getEmail,
     productID: product.value.id,
     productCount: selectProductCount.value
@@ -138,7 +143,7 @@ const addToCart = async () => {
   try {
     // 發送請求到後端
     const response = await axios.post('http://localhost:3002/api/addcart', data);
-    if (response.status === 200) {
+    if (response.status === 201) {
       success = true;
     }
   } catch (error) {
