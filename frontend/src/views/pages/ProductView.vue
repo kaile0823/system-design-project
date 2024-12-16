@@ -35,6 +35,10 @@ onMounted(async () => {
 
 // View details of a product card
 const viewDetails = (prop) => {
+  console.log(store.getUname);
+  isLoggedIn.value = store.getUname ? true : false;
+  console.log(isLoggedIn.value);
+  console.log("Product details triggered:", prop);
   product.value = prop;
   product.value.images.forEach(image => {
     images.value.push({ itemImageSrc: `http://localhost:3002/img/${prop.id}/${image}` });
@@ -125,17 +129,28 @@ const purchase = async () => {
 }
 
 const addToCart = async () => {
-  await checkAccount(); // 檢查是否已登入/
+  await checkAccount(); // 檢查是否已登入
 
-  const success = false;
+  let success = false;
 
   const data = {
+    user_id:store.getUserId,
     email: store.getEmail,
     productID: product.value.id,
     productCount: selectProductCount.value
+  };
+
+  try {
+    // 發送請求到後端
+    const response = await axios.post('http://localhost:3002/api/addcart', data);
+    if (response.status === 201) {
+      success = true;
+    }
+  } catch (error) {
+    console.error('Failed to add product to cart:', error);
   }
 
-  // kl： 處理購物車邏輯
+  // 關閉對話框並顯示結果
   showDialog.value = false;
   if (success) {
     showAddCartSuccessDialog.value = true;

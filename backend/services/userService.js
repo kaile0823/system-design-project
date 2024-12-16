@@ -1,6 +1,8 @@
 
 import UserSqliteModel from '../models/userSqliteModel.js';
 import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
+dotenv.config();
 
 // API SERVICES
 
@@ -65,6 +67,8 @@ export const checkDuplicateService = async (uname, email) => {
   };
 }
 
+
+
 export const loginService = async (email, password) => {
   try {
     const user = await UserSqliteModel.findOne({ where: { email } });
@@ -85,6 +89,10 @@ export const loginService = async (email, password) => {
     return { isEmailValid: false, isPasswordValid: false };
   }
 }
+
+
+
+
 
 // For auto login with saved token on client
 export const loginVerifyService = async (token) => {

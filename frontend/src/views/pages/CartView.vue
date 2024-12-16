@@ -12,24 +12,51 @@ const toast = useToast();
 const showPurchaseSuccessDialog = ref(false);
 const showPurchaseFailedDialog = ref(false);
 const cartItems = ref([]);
+const isLoading = ref(false); // 初始化 isLoading
+const hasError = ref(false); // 初始化錯誤狀態
 
-onMounted(async () => {
-
+const fetchCartItems = async () => {
   try {
-    // kl: 獲得購物車資訊
+    isLoading.value = true; // 開始加載
+    hasError.value = false; // 清除錯誤狀態
+    console.error("Fetching cart items...");
+    
+    const data = {
+      userId: store.getUserId, // 獲取使用者 ID
+    };
 
-    cartItems.value.push({ id: 1, name: 'Product 1', price: 19.99, quantity: 2 });
-    cartItems.value.push({ id: 2, name: 'Product 2', price: 29.99, quantity: 1 });
-    cartItems.value.push({ id: 3, name: 'Product 3', price: 39.99, quantity: 3 });
-
-    const response = await axios.get('http://localhost:3002/api/products');
-    // cartItems.value = response.data;
-
-
+    // 向後端請求購物車數據
+    const response = await axios.post('http://localhost:3002/api/getcart', data);
+    cartItems.value = response.data; // 更新購物車數據
+    console.log("Cart items:", cartItems.value);
 
   } catch (error) {
-    console.error("Error fetching products:", error);
+    console.error("Error fetching cart items:", error);
+    hasError.value = true;
+
+    // 顯示錯誤提示
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'Failed to fetch cart items. Please try again later.',
+      life: 3000,
+    });
+  } finally {
+    isLoading.value = false; // 加載結束
   }
+};
+
+
+
+
+
+
+
+
+onMounted(async () => {
+  fetchCartItems();
+
+
 });
 
 const total = computed(() => {
@@ -47,35 +74,81 @@ const checkAccount = async () => {
   }
 }
 
-const removeItem = (item) => {
-  // kl: 刪除在購物車裡的商品
+const removeItem = async (item) => {
 
-  const index = cartItems.value.findIndex(i => i.id === item.id);
+  await checkAccount(); // 檢查是否已登入
+  // 找到商品索引
+  console.error("trigger removeItem");
+  console.error(item.item_id);
+  const index = cartItems.value.findIndex(i => i.id === item.item_id);
+  const data = {
+    userId:store.getUserId,
+    itemId:item.item_id
+    };
+
+
+  try {
+      const response =await axios.post(`http://localhost:3002/api/removecart`,data);
+    } catch (error) {
+      console.error('Failed to sync with server:', error);
+    }
+  fetchCartItems();
   if (index !== -1) {
+    // 從購物車中刪除商品
     cartItems.value.splice(index, 1);
-    toast.add({ severity: 'success', summary: 'Item Removed', detail: `${item.name} has been removed from your cart.`, life: 3000 });
+
+    // 向後端發送刪除請求（可選）
+
+
+    // 顯示成功消息
+    toast.add({ 
+      severity: 'success', 
+      summary: 'Item Removed', 
+      detail: `${item.name} has been removed from your cart.`, 
+      life: 3000 
+    });
+  } else {
+    // 如果商品不存在，顯示錯誤提示
+    toast.add({ 
+      severity: 'error', 
+      summary: 'Error', 
+      detail: `${item.name} is not in the cart.`, 
+      life: 3000 
+    });
   }
 };
 
 
+
 const purchase = async () => {
   await checkAccount(); // 檢查是否已登入
-  
-  const success = false;
-  
+  console.error("trigger purchase");
+  let success = false;
+
   const data = {
-    email: store.getEmail,
-    productID: product.value.id,
-    productCount: selectProductCount.value
+    userId:store.getUserId,
+  };
+
+  try {
+    // 發送購買請求到後端
+    const response = await axios.post('http://localhost:3002/api/cartpurchase', data);
+    success = response.status === 200;
+  } catch (error) {
+    console.error('Purchase failed:', error);
   }
+
   
-  // kl： 處理購物邏輯
-  showDialog.value = false;
+
+  // 根據購買結果顯示對應提示
+  console.error("success status");
+  console.error(success);
   if (success) {
+    fetchCartItems();
     showPurchaseSuccessDialog.value = true;
     toast.add({ severity: 'info', summary: 'Checkout', detail: 'Proceeding to checkout...', life: 3000 });
   } else {
     showPurchaseFailedDialog.value = true;
+    toast.add({ severity: 'error', summary: 'Purchase Failed', detail: 'Failed to complete your purchase.', life: 3000 });
   }
 }
 
@@ -100,36 +173,69 @@ const closePurchaseFailed = () => {
       </template>
       <!-- TODO: Handle shopping item added from product catalog, currently it's just a placeholder -->
       <template #content>
+
+
+
+
         <DataTable :value="cartItems" responsiveLayout="scroll">
-          <Column field="name" header="Product"></Column>
+          <!-- 商品名稱 -->
+          <Column field="name" header="Product Name"></Column>
+
+          <!-- 價格 -->
           <Column field="price" header="Price">
-            <template #body="slotProps">
+          <template #body="slotProps">
               ${{ slotProps.data.price.toFixed(2) }}
             </template>
           </Column>
+
+          <!-- 商品描述 -->
+          <Column field="description" header="Description"></Column>
+
+          <!-- 購買數量 -->
           <Column field="quantity" header="Quantity">
-            <template #body="slotProps">
-              <InputNumber v-model="slotProps.data.quantity" @update:modelValue="updateQuantity(slotProps.data, $event)"
-                :min="1" :max="99" disabled/>
-            </template>
+          <template #body="slotProps">
+            <InputNumber 
+            v-model="slotProps.data.quantity" 
+            @update:modelValue="updateQuantity(slotProps.data, $event)"
+            :min="1" 
+            :max="99" 
+            disabled />
+          </template>
           </Column>
-          <Column field="total" header="Total">
-            <template #body="slotProps">
-              ${{ (slotProps.data.price * slotProps.data.quantity).toFixed(2) }}
-            </template>
-          </Column>
+
+          <!-- 刪除按鈕 -->
           <Column>
-            <template #body="slotProps">
-              <Button icon="pi pi-trash" class="p-button-rounded p-button-danger p-button-text"
-                @click="removeItem(slotProps.data)" />
-            </template>
+          <template #body="slotProps">
+            <Button 
+            icon="pi pi-trash" 
+            class="p-button-rounded p-button-danger p-button-text"
+            @click="removeItem(slotProps.data)" />
+          </template>
           </Column>
         </DataTable>
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+ 
         <div class="flex justify-content-between align-items-center mt-4">
           <div class="text-2xl font-bold">
             Total: ${{ total }}
           </div>
-          <Button label="Purchase" icon="pi pi-shopping-cart" @click="purchase" />
+          <Button label="Purchase" icon="pi pi-shopping-cart" @click="purchase()" />
         </div>
       </template>
     </Card>
@@ -138,13 +244,13 @@ const closePurchaseFailed = () => {
   <Dialog v-model:visible="showPurchaseSuccessDialog" :modal="true"
     :style="{ width: '50vw', maxWidth: '50rem', height: '50vh' }" :header="`Information`" @close="closePurchaseSuccess"
     @after-hide="closePurchaseSuccess">
-    <div class="text-center">Successfully Added to Cart</div>
+    <div class="text-center">purchase sucess</div>
   </Dialog>
 
   <Dialog v-model:visible="showPurchaseFailedDialog" :modal="true"
     :style="{ width: '50vw', maxWidth: '50rem', height: '50vh' }" :header="`Information`" @close="closePurchaseFailed"
     @after-hide="closePurchaseFailed">
-    <div class="text-center">Failed Adding to Cart</div>
+    <div class="text-center">Failed to purchase</div>
   </Dialog>
 </template>
 
