@@ -71,3 +71,27 @@ export const cartPurchaseController = async (req, res) => {
         res.status(500).json({ message:"Error processing purchase:" });
     }
 }
+
+export const getPurchaseController = async (req, res) => {
+    try {
+        const purchases = await purchase.getPurchaseService();
+        res.json(purchases);
+    } catch (error) {
+        console.error("Error getting purchases:", error);
+        res.status(500).json({ message: 'Error getting purchases' });
+    }
+}
+
+export const getUserPurchaseController = async (req, res) => {
+    try {
+        const userId = req.params.id;
+        if (!userId) {
+            return res.status(400).json({ message: 'User ID is required' });
+        }
+        const userPurchases = await purchase.getUserPurchaseService(userId);
+        res.json(userPurchases);
+    } catch (error) {
+        console.error("Error getting user's purchases:", error);
+        res.status(500).json({ message: 'Error getting user purchases' });
+    }
+}

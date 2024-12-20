@@ -29,3 +29,13 @@ export const purchaseService = async (data) => {
         return { status: false, message: 'Purchase failed' };
     }
 }
+
+export const getPurchaseService = async () => {
+    const purchases = await PurchaseSqliteModel.findAll({ include: [UserSqliteModel, ProductSqliteModel] });
+    return purchases;
+}
+
+export const getUserPurchaseService = async (id) => {
+    const purchases = await PurchaseSqliteModel.findAll({ where: { user_id: id }, include: [UserSqliteModel, ProductSqliteModel] });
+    return purchases;
+}
