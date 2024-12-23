@@ -14,7 +14,7 @@
     <router-link to="/admin/orders">
         <a class="flex align-items-center gap-2">
             <i class="pi pi-server"></i>
-            <span>Orders</span>
+            <span>Purchases</span>
         </a>
     </router-link>
     <router-link to="/admin/carts">
@@ -23,7 +23,7 @@
             <span>Carts</span>
         </a>
     </router-link>
-    <router-link to="/admin/statistics">
+    <!-- <router-link to="/admin/statistics">
         <a class="flex align-items-center gap-2">
             <i class="pi pi-chart-bar"></i>
             <span>Statistics</span>
@@ -34,5 +34,5 @@
             <i class="pi pi-cog"></i>
             <span>Settings</span>
         </a>
-    </router-link>
+    </router-link> -->
 </template>

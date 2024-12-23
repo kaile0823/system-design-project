@@ -31,7 +31,7 @@ const routes = [
     ]
    },
   {
-    path: '/', component: MainView,
+    path: '/', component: MainView,    
     children: [
       { path: '', component: HomeView },
       { path: 'product', component: ProductView },
