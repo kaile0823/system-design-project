@@ -57,15 +57,15 @@ function toggleDarkMode() {
                     <Button type="button" @click="closeCallback" icon="pi pi-times" rounded outlined />
                 </div>
                 <div class="overflow-y-auto flex flex-column justify-content-center pt-3 px-4 gap-5 my-4">
-                    <router-link to="/">
+                    <!-- <router-link to="/">
                         <a>Home</a>
-                    </router-link>
+                    </router-link> -->
                     <router-link to="/product">
                         <a>Product</a>
                     </router-link>
-                    <router-link to="/post">
+                    <!-- <router-link to="/post">
                         <a>Post</a>
-                    </router-link>
+                    </router-link> -->
                     <hr class="mx-0" />
                     <router-link v-if="isAdmin" to="/admin/users">
                         <a>Admin</a>

@@ -52,15 +52,15 @@ function toggleDarkMode() {
         <template #content>
             <div class="flex align-items-center">
                 <div class="flex-auto flex left-0 justify-content-evenly align-items-center">
-                    <router-link to="/">
+                    <!-- <router-link to="/">
                         <a>Home</a>
-                    </router-link>
+                    </router-link> -->
                     <router-link to="/product">
                         <a>Product</a>
                     </router-link>
-                    <router-link to="/post">
+                    <!-- <router-link to="/post">
                         <a>Post</a>
-                    </router-link>
+                    </router-link> -->
                     <router-link v-if="isAdmin" to="/admin/users">
                         <a>Admin</a>
                     </router-link>
