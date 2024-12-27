@@ -21,14 +21,10 @@ import cartRoutes from './routes/cartRoutes.js';
 import purchaseRoutes from './routes/purchaseRoutes.js';
 
 const app = express();
-
-// Connect to databases
-// connectMongoDB();
 await connectSqlite();
 
 const syncModels = async () => {
     try {
-        // 根據順序sync模型
         await UserSqliteModel.sync({ alter: true });
         await CardSqliteModel.sync({ alter: true });
         await ProductSqliteModel.sync({ alter: true });
@@ -37,22 +33,23 @@ const syncModels = async () => {
 
         // await sequelize.sync({ force: true });
         // await UserSqliteModel.update({ admin: true }, { where: { id: 1 } });
-
-        console.log('Database & tables created!');
-
+        
         // Create entry
         // const user = await UserSqliteModel.create({
-        //     uname:'root',
-        //     email:'howwilson11@gmail.com',
-        //     password:'root',
-        //     address:{district:'Changhua', city:'Changhua City', address: 'No. 1, Jinde-Road'},
-        //     admin: true
-        //   });
-        // console.log(user);
+            //     uname:'root',
+            //     email:'howwilson11@gmail.com',
+            //     password:'root',
+            //     address:{district:'Changhua', city:'Changhua City', address: 'No. 1, Jinde-Road'},
+            //     admin: true
+            //   });
+            // console.log(user);
+
+        console.log('Database & tables created!');
     } catch (error) {
         console.error('Error syncing database:', error);
     }
 };
+
 await syncModels();
 establishRelations();
 
@@ -70,6 +67,5 @@ app.use('/api', imageRoutes);
 app.use('/api', cartRoutes);
 app.use('/api', purchaseRoutes);
 await sequelize.sync({ force: false });
-
 
 export default app;

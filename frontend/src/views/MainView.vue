@@ -8,11 +8,12 @@ import axios from 'axios';
 
 const store = useGlobalStore();
 const token = localStorage.getItem('token');
+const backendUrl = import.meta.env.VITE_BACKEND_API_URL;
 
 onMounted(async () => {
-
+    console.log(backendUrl, 'test')
     try {
-        const response = await axios.post('http://localhost:3002/api/users/verify-token', { token: token });
+        const response = await axios.post(`${backendUrl}/api/users/verify-token`, { token: token });
         // console.log(response.data);
         store.setUname(response.data.uname);
         store.setEmail(response.data.email);

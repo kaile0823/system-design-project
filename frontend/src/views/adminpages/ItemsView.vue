@@ -3,7 +3,6 @@
 import { ref, onMounted } from 'vue';
 import { FilterMatchMode } from '@primevue/core/api';
 import { useToast } from 'primevue/usetoast';
-import { ProductService } from '@/service/ProductService';
 import axios from 'axios';
 
 // Initialization
@@ -20,13 +19,14 @@ const filters = ref({
     'global': { value: null, matchMode: FilterMatchMode.CONTAINS },
 });
 const submitted = ref(false);
+const backendUrl = import.meta.env.VITE_BACKEND_API_URL;
 
 // Server Functions
 
 // Fetch products from server
 const fetchProducts = async () => {
     try {
-        const response = await axios.get('http://localhost:3002/api/products');
+        const response = await axios.get(`${backendUrl}/api/products`);
         if (response && response.data) {
             products.value = response.data;
         } else {
@@ -65,7 +65,7 @@ const addProduct = async () => {
     // product.value.image = JSON.stringify(product.value.image);
 
     try {
-        const response = await axios.post('http://localhost:3002/api/products', product.value);
+        const response = await axios.post(`${backendUrl}/api/products`, product.value);
         if (response.status === 201 && response.data) {
             products.value.push(response.data);
             toast.add({ severity: 'success', summary: 'Successful', detail: 'Product Created', life: 3000 });
@@ -84,7 +84,7 @@ const addProduct = async () => {
 const updateProduct = async () => {
     try {
         const id = product.value.id;
-        const response = await axios.put(`http://localhost:3002/api/products/${id}`, product.value);
+        const response = await axios.put(`${backendUrl}/api/products/${id}`, product.value);
         if (response.status === 201) {
             products.value[findIndexById(product.value.id)] = product.value;
             toast.add({ severity: 'success', summary: 'Successful', detail: 'Product Updated', life: 3000 });
@@ -104,7 +104,7 @@ const updateProduct = async () => {
 const deleteProduct = async () => {
     try {
         const id = product.value.id;
-        const response = await axios.delete(`http://localhost:3002/api/products/${id}`);
+        const response = await axios.delete(`${backendUrl}/api/products/${id}`);
         if (response.status === 204) {
             products.value = products.value.filter(val => val.id !== product.value.id);
             product.value = {};
@@ -125,7 +125,7 @@ const deleteSelectedProducts = async () => {
 
     for (const product of selectedProducts.value) {
         try {
-            await axios.delete(`http://localhost:3002/api/products/${product.id}`);
+            await axios.delete(`${backendUrl}/api/products/${product.id}`);
             console.log(`Deleted product with ID: ${product.id}`);
         } catch (error) {
             console.error(`Failed to delete product with ID: ${product.id}`, error);
@@ -151,7 +151,7 @@ const onImageUpload = async () => {
     let count = 0;
     try {
 
-        await axios.delete(`http://localhost:3002/api/images/${product.value.id}`);
+        await axios.delete(`${backendUrl}/api/images/${product.value.id}`);
 
         files.value.map(async (file) => {
             const id = product.value.id;
@@ -160,7 +160,7 @@ const onImageUpload = async () => {
             const renamedFile = renameFileObject(file, newName);
             const formData = new FormData();
             formData.append("image", renamedFile);
-            const uploadResponse = await axios.post('http://localhost:3002/api/images', formData, {
+            const uploadResponse = await axios.post(`${backendUrl}/api/images`, formData, {
                 headers: { "Content-Type": "multipart/form-data" },
             });
             toast.add({ severity: 'info', summary: 'Success', detail: 'File Uploaded', life: 3000 });
@@ -175,10 +175,10 @@ const onImageSelect = async (event) => {
     files.value = event.files;
 
     try {
-        const imageNames = await axios.get(`http://localhost:3002/api/images/${product.value.id}`);
+        const imageNames = await axios.get(`${backendUrl}/api/images/${product.value.id}`);
         if (imageNames.status === 200) {
             imageNames.data.map(async (image) => {
-                const response = await axios.get(`http://localhost:3002/img/${product.value.id}/${image}`, {
+                const response = await axios.get(`${backendUrl}/img/${product.value.id}/${image}`, {
                     responseType: 'blob',
                 });
                 const blob = response.data;
@@ -379,7 +379,7 @@ const deleteImage = () => {
                 <Column field="name" header="Name" sortable style="min-width: 10rem"></Column>
                 <Column header="Image">
                     <template #body="slotProps">
-                        <img :src="`http://localhost:3002/img/${slotProps.data.id}/${slotProps.data.images[0]}`"
+                        <img :src="`${backendUrl}/img/${slotProps.data.id}/${slotProps.data.images[0]}`"
                             :alt="slotProps.data.image" class="rounded" style="width: 64px" />
                     </template>
                 </Column>

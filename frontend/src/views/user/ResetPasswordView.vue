@@ -19,6 +19,7 @@ const password = ref('');
 const passwordConfirm = ref('');
 const cond1 = ref(true); // When password is empty
 const cond2 = ref(true); // When password does not match
+const backendUrl = import.meta.env.VITE_BACKEND_API_URL;
 
 const resolver = ref(zodResolver(
     z.object({
@@ -65,7 +66,7 @@ const submit = async () => {
             password: password.value
         }
         // Reset password result from server
-        const response = await axios.post('http://localhost:3002/api/users/reset-password', resetData);
+        const response = await axios.post(`${backendUrl}/api/users/reset-password`, resetData);
         if (response.status === 200) {
             toast.add({ severity: 'success', summary: 'Successful', detail: 'Password Changed', life: 3000 });
             router.push('/user/login');

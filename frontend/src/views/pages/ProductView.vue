@@ -17,6 +17,8 @@ const showAddCartFailedDialog = ref(false);
 const showPurchaseSuccessDialog = ref(false);
 const showPurchaseFailedDialog = ref(false);
 
+const backendUrl = import.meta.env.VITE_BACKEND_API_URL;
+
 const isLoggedIn = ref(false);
 
 watch(() => store.getUname, () => {
@@ -26,7 +28,7 @@ watch(() => store.getUname, () => {
 onMounted(async () => {
   console.log(store.getUname);
   try {
-    const response = await axios.get('http://localhost:3002/api/products');
+    const response = await axios.get(`${backendUrl}/api/products`);
     products.value = response.data;
   } catch (error) {
     console.error("Error fetching products:", error);
@@ -41,7 +43,7 @@ const viewDetails = (prop) => {
   console.log("Product details triggered:", prop);
   product.value = prop;
   product.value.images.forEach(image => {
-    images.value.push({ itemImageSrc: `http://localhost:3002/img/${prop.id}/${image}` });
+    images.value.push({ itemImageSrc: `${backendUrl}/img/${prop.id}/${image}` });
   })
   showDialog.value = true;
 };
@@ -114,7 +116,7 @@ const purchase = async () => {
       quantity: selectProductCount.value,
     }
 
-    const response = await axios.post('http://localhost:3002/api/purchase', data);
+    const response = await axios.post(`${backendUrl}/api/purchase`, data);
 
     showDialog.value = false;
     if (response.status === 201) {
@@ -142,7 +144,7 @@ const addToCart = async () => {
 
   try {
     // 發送請求到後端
-    const response = await axios.post('http://localhost:3002/api/addcart', data);
+    const response = await axios.post(`${backendUrl}/api/addcart`, data);
     if (response.status === 201) {
       success = true;
     }
@@ -196,7 +198,7 @@ const rateDisliked = async () => {
       <Card class="h-full shadow-3" style="max-height: 25rem;">
         <template #header>
           <a @click="viewDetails(product)">
-            <img :src="`http://localhost:3002/img/${product.id}/${product.images[0]}`" :alt="product.name"
+            <img :src="`${backendUrl}/img/${product.id}/${product.images[0]}`" :alt="product.name"
               style="width: 100%; height: 200px; object-fit: cover;" />
           </a>
         </template>

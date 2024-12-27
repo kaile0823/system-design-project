@@ -14,13 +14,14 @@ const user = ref({
         city: ''
     },
 });
+const backendUrl = import.meta.env.VITE_BACKEND_API_URL;
 
 onMounted(async () => {
     try {
         if (!store.getUserId) {
             return
         }
-        const response = await axios.get(`http://localhost:3002/api/users/${store.getUserId}`);
+        const response = await axios.get(`${backendUrl}/api/users/${store.getUserId}`);
         console.log(response.data, 'jj');
         user.value = response.data;
     }
@@ -89,7 +90,7 @@ onMounted(async () => {
         <Column field="name" header="Name"  style="min-width: 10rem"></Column>
         <Column header="Image">
             <template #body="slotProps">
-                <img :src="`http://localhost:3002/img/${slotProps.data.id}/${slotProps.data.images[0]}`"
+                <img :src="`${backendUrl}/img/${slotProps.data.id}/${slotProps.data.images[0]}`"
                     :alt="slotProps.data.image" class="rounded" style="width: 64px" />
             </template>
         </Column>

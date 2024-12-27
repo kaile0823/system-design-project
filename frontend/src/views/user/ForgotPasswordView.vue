@@ -13,6 +13,7 @@ const initialValues = ref({
     email: ''
 });
 const email = ref('');
+const backendUrl = import.meta.env.VITE_BACKEND_API_URL;
 
 const resolver = ref(zodResolver(
     z.object({
@@ -23,7 +24,7 @@ const resolver = ref(zodResolver(
                     email: val,
                     password: ''
                 }
-                const response = await axios.post('http://localhost:3002/api/users/login', data);
+                const response = await axios.post(`${backendUrl}/api/users/login`, data);
                 return response.data.isEmailValid
             }, { message: 'Email does not exist' }),
     })

@@ -1,6 +1,5 @@
 import express from 'express';
 import { addCartController, getCartController, checkCartController ,removeItemFromCart, getCartsController} from '../controllers/cartController.js'; // 使用默認匯入
-import { authenticate } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 

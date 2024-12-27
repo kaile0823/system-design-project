@@ -14,6 +14,7 @@ const showPurchaseFailedDialog = ref(false);
 const cartItems = ref([]);
 const isLoading = ref(false); // 初始化 isLoading
 const hasError = ref(false); // 初始化錯誤狀態
+const backendUrl = import.meta.env.VITE_BACKEND_API_URL;
 
 const fetchCartItems = async () => {
   try {
@@ -26,7 +27,7 @@ const fetchCartItems = async () => {
     };
 
     // 向後端請求購物車數據
-    const response = await axios.post('http://localhost:3002/api/getcart', data);
+    const response = await axios.post(`${backendUrl}/api/getcart`, data);
     cartItems.value = response.data; // 更新購物車數據
     console.log("Cart items:", cartItems.value);
 
@@ -88,7 +89,7 @@ const removeItem = async (item) => {
 
 
   try {
-      const response =await axios.post(`http://localhost:3002/api/removecart`,data);
+      const response =await axios.post(`${backendUrl}/api/removecart`,data);
     } catch (error) {
       console.error('Failed to sync with server:', error);
     }
@@ -131,7 +132,7 @@ const purchase = async () => {
 
   try {
     // 發送購買請求到後端
-    const response = await axios.post('http://localhost:3002/api/cartpurchase', data);
+    const response = await axios.post(`${backendUrl}/api/cartpurchase`, data);
     success = response.status === 200;
   } catch (error) {
     console.error('Purchase failed:', error);

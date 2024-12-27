@@ -29,6 +29,7 @@ const selectedDistrict = ref('');
 const counties = ref([]);
 const districts = ref([]);
 const allDistricts = ref([]);
+const backendUrl = import.meta.env.VITE_BACKEND_API_URL;
 
 watch(selectedCounty, (newValue) => {
     // Update districts based on the selected county
@@ -143,7 +144,7 @@ const resolver = ref(zodResolver(
             // console.log(datas);
 
             // Check if username or email already exists
-            const userResponse = await axios.post('http://localhost:3002/api/users/', datas);
+            const userResponse = await axios.post(`${backendUrl}/api/users/`, datas);
             if (userResponse.status === 200) {
                 if (userResponse.data.uname) {
                     ctx.addIssue({

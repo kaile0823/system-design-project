@@ -44,13 +44,15 @@ const counties = ref([]);
 const districts = ref([]);
 const allDistricts = ref([]);
 
+const backendUrl = import.meta.env.VITE_BACKEND_API_URL;
+
 onMounted(async () => {
     await fetchPurchase();
 });
 
 const fetchPurchase = async () => {
     try {
-        const response = await axios.get('http://localhost:3002/api/purchase');
+        const response = await axios.get(`${backendUrl}/api/purchase`);
         if (response && response.data) {
             purchase.value = response.data;
             console.log(purchase.value);
@@ -160,11 +162,11 @@ const resolver = ref(zodResolver(
 
             // Add new user
             if (isUpdate.value === false) {
-                userResponse = await axios.post('http://localhost:3002/api/purchase/', datas);
+                userResponse = await axios.post(`${backendUrl}/api/purchase/`, datas);
             }
             // Update user
             else {
-                userResponse = await axios.put(`http://localhost:3002/api/purchase/${userId.value}`, datas);
+                userResponse = await axios.put(`${backendUrl}/api/purchase/${userId.value}`, datas);
             }
             if (userResponse.status === 200) {
                 if (userResponse.data.uname) {
@@ -205,7 +207,7 @@ const onFormSubmit = ({ valid }) => {
 const deleteUser = async () => {
     
     try {
-        const response = await axios.delete(`http://localhost:3002/api/purchase/${userId.value}`);
+        const response = await axios.delete(`${backendUrl}/api/purchase/${userId.value}`);
         if (response.status === 204) {
             purchase.value = purchase.value.filter(val => val.id !== userId.value);
             toast.add({ severity: 'success', summary: 'Successful', detail: 'User Deleted', life: 3000 });
@@ -227,7 +229,7 @@ const deleteSelectedpurchase = async () => {
     for (const user of selectedpurchase.value) {
         try {
             console.log(user);
-            await axios.delete(`http://localhost:3002/api/purchase/${user.id}`);
+            await axios.delete(`${backendUrl}/api/purchase/${user.id}`);
         } catch (error) {
             console.error(`Failed to delete user with ID: ${user.id}`, error);
             toast.add({ severity: 'error', summary: 'Error', detail: 'user Not Deleted', life: 3000 });

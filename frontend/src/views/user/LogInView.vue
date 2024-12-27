@@ -17,6 +17,7 @@ const initialValues = ref({
 });
 const email = ref('');
 const password = ref('');
+const backendUrl = import.meta.env.VITE_BACKEND_API_URL;
 
 const resolver = ref(zodResolver(
   z.object({
@@ -30,7 +31,7 @@ const resolver = ref(zodResolver(
     }
 
     // Login result from server
-    const response = await axios.post('http://localhost:3002/api/users/login', loginData);
+    const response = await axios.post(`${backendUrl}/api/users/login`, loginData);
 
     if (!response.data?.isEmailValid) {
       ctx.addIssue({
