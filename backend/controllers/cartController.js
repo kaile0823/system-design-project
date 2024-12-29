@@ -150,6 +150,6 @@ export const getCartsController = async (req, res) => {
         res.json(carts);
     } catch (error) {
         console.error("Error fetching carts:", error);
-        res.status(500).json({ message: 'Error fetching carts' });
+        res.status(500).json({ message: 'Error fetching carts' }); 
     }
 }

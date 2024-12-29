@@ -14,28 +14,37 @@ const user = ref({
         city: ''
     },
 });
+const purchases = ref();
 const backendUrl = import.meta.env.VITE_BACKEND_API_URL;
 
 onMounted(async () => {
     try {
+        console.log(store.getUserId);
         if (!store.getUserId) {
             return
         }
         const response = await axios.get(`${backendUrl}/api/users/${store.getUserId}`);
-        console.log(response.data, 'jj');
+        const response2 = await axios.get(`${backendUrl}/api/purchase/${store.getUserId}`);
         user.value = response.data;
+        purchases.value = response2.data;
+
+        purchases.value.forEach((purchase) => {
+            purchase.createdAt = new Date(purchase.createdAt).toLocaleString();
+            purchase.total = purchase.quantity * purchase.Product.price;
+            return purchase
+        })
+        console.log(purchases.value)
     }
     catch (error) {
         console.log(error);
     }
 });
 
-
 </script>
 
 
 <template>
-    <h2 class="text-center">User Profile</h2>
+    <h2 class="text-center">User Profile</h2> 
     <hr class="my-4">
     <div class="grid">
         <div class="col-12 md:col-6 grid">
@@ -86,20 +95,18 @@ onMounted(async () => {
     <hr class="my-4">
     <h2 class="text-center">Purchases</h2>
 
-    <DataTable ref="dt" v-model:selection="selectedProducts" :value="products" dataKey="id"stripedRows resizableColumns columnResizeMode="expand">
-        <Column field="name" header="Name"  style="min-width: 10rem"></Column>
-        <Column header="Image">
+    <DataTable ref="dt" v-model:selection="selectedProducts" :value="purchases" dataKey="id" stripedRows resizableColumns columnResizeMode="expand">
+        <!-- <Column header="Image">
             <template #body="slotProps">
                 <img :src="`${backendUrl}/img/${slotProps.data.id}/${slotProps.data.images[0]}`"
                     :alt="slotProps.data.image" class="rounded" style="width: 64px" />
             </template>
-        </Column>
-        <Column field="price" header="Price"  style="min-width: 6rem">
-            <template #body="slotProps">
-                {{ formatCurrency(slotProps.data.price) }}
-            </template>
-        </Column>
+        </Column> -->
+        <Column field="Product.name" header="Product"  style="min-width: 8rem"></Column>
+        <Column field="quantity" header="Quantity"  style="min-width: 8rem"></Column>
+        <Column field="createdAt" header="Purchase Time"  style="min-width: 8rem"></Column>
+        <Column field="Product.price" header="Unit Price"  style="min-width: 6rem"></Column>
+        <Column field="total" header="Total Price"  style="min-width: 6rem"></Column>
 
-        <Column field="category" header="Category"  style="min-width: 8rem"></Column>
     </DataTable>
 </template>

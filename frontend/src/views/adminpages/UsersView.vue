@@ -30,9 +30,10 @@ const initialValues = ref({
     email: '',
     password: '',
     passwordConfirm: '',
-    country: { district: '', city: '', address: '' },
+    address: { county: '', district: '', address: '' },
 });
 const userId = ref(null);
+const userName = ref(null);
 const uname = ref(null);
 const email = ref('');
 const password = ref('');
@@ -42,6 +43,7 @@ const cond1 = ref(true); // When password is empty
 const cond2 = ref(true); // When password does not match
 const selectedCounty = ref('');
 const selectedDistrict = ref('');
+const admin = ref(false);
 const counties = ref([]);
 const districts = ref([]);
 const allDistricts = ref([]);
@@ -72,6 +74,9 @@ const fetchUsers = async () => {
         const response = await axios.get(`${backendUrl}/api/users`);
         if (response && response.data) {
             users.value = response.data;
+            users.value.forEach(user => {
+                user.createdAt = new Date(user.createdAt).toLocaleString();
+            })
         } else {
             console.error('No data received from the API');
         }
@@ -168,9 +173,10 @@ const resolver = ref(zodResolver(
                     address: data.address,
                     county: data.county,
                     district: data.district,
-                }
+                },
+                admin: data.admin
             }
-            // console.log(datas);
+            console.log(datas);
 
             // Check if username or email already exists
             let userResponse;
@@ -221,7 +227,7 @@ const onFormSubmit = ({ valid }) => {
 
 
 const deleteUser = async () => {
-    
+
     try {
         const response = await axios.delete(`${backendUrl}/api/users/${userId.value}`);
         if (response.status === 204) {
@@ -288,16 +294,17 @@ const editUser = async (prod) => {
     selectedCounty.value = prod.address.county;
     selectedDistrict.value = prod.address.district;
 
-    // initialValues.value = {
-    //     uname: prod.uname,
-    //     email: prod.email,
-    //     password: prod.password,
-    //     address: {
-    //         address: prod.address.address,
-    //         county: prod.address.county,
-    //         district: prod.address.district,
-    //     }
-    // }
+    initialValues.value = {
+        uname: prod.uname,
+        email: prod.email,
+        password: prod.password,
+        passwordConfirm: prod.password,
+        address: {
+            county: prod.address.county,
+            district: prod.address.district,
+            address: prod.address.address,
+        },
+    }
 
     console.log(initialValues.value);
 
@@ -312,6 +319,8 @@ const hideDialog = () => {
 
 const confirmDeleteuser = (prod) => {
     userId.value = prod.id;
+    userName.value = prod.uname;
+    console.log(userName.value);
     deleteUserDialog.value = true;
 };
 
@@ -391,6 +400,7 @@ const sizeOptions = ref([
                         {{ slotProps.data.address.county }}
                     </template>
                 </Column>
+                <Column field="createdAt" header="Created Time" sortable style="min-width: 8rem"></Column>
             </DataTable>
         </div>
 
@@ -450,7 +460,7 @@ const sizeOptions = ref([
                     <InputGroupAddon>
                         <i class="pi pi-address-book"></i>
                     </InputGroupAddon>
-                    <InputText v-model="address" name="address" placeholder="Address" />
+                    <InputText v-model="address" name="address.address" placeholder="Address" />
                 </InputGroup>
                 <Message v-if="$form.address?.invalid" class='col-6' severity="error" size="small" variant="simple">
                     {{
@@ -460,12 +470,12 @@ const sizeOptions = ref([
                     <InputGroupAddon>
                         <i class="pi pi-map"></i>
                     </InputGroupAddon>
-                    <Select v-model="selectedCounty" name="county" :options="counties" placeholder="Counties" fluid />
+                    <Select v-model="selectedCounty" name="address.county" :options="counties" placeholder="Counties" fluid />
 
                     <InputGroupAddon>
                         <i class="pi pi-map"></i>
                     </InputGroupAddon>
-                    <Select v-model="selectedDistrict" name="district" :options="districts" placeholder="District"
+                    <Select v-model="selectedDistrict" name="address.district" :options="districts" placeholder="District"
                         fluid />
                 </InputGroup>
                 <div class="grid">
@@ -476,6 +486,13 @@ const sizeOptions = ref([
                         variant="simple">{{
                             $form.district.error?.message }}</Message>
                 </div>
+
+                <!-- <InputGroup> -->
+                <div class="flex align-items-center gap-4">
+                    <Checkbox v-model="admin" name="admin" binary />
+                    <label> Admin </label>
+                </div>
+                <!-- </InputGroup> -->
 
                 <div class="flex justify-content-end">
                     <Button label="Cancel" icon="pi pi-times" text @click="hideDialog" />
@@ -488,7 +505,7 @@ const sizeOptions = ref([
         <Dialog v-model:visible="deleteUserDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
             <div class="flex items-center gap-4">
                 <i class="pi pi-exclamation-triangle !text-3xl" />
-                <span v-if="user">Are you sure you want to delete <b>{{ user.name }}</b>?</span>
+                <span>Are you sure you want to delete <b>{{ userName }}</b>?</span>
             </div>
             <template #footer>
                 <Button label="No" icon="pi pi-times" text @click="deleteUserDialog = false" />
@@ -499,7 +516,7 @@ const sizeOptions = ref([
         <Dialog v-model:visible="deleteUsersDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
             <div class="flex items-center gap-4">
                 <i class="pi pi-exclamation-triangle !text-3xl" />
-                <span v-if="user">Are you sure you want to delete the selected users?</span>
+                <span>Are you sure you want to delete the selected users?</span>
             </div>
             <template #footer>
                 <Button label="No" icon="pi pi-times" text @click="deleteUsersDialog = false" />

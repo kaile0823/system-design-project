@@ -1,6 +1,6 @@
 <script setup>
 
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import { useRouter } from 'vue-router';
 import { useGlobalStore } from "@/store/useGlobalStore";
 import { zodResolver } from '@primevue/forms/resolvers/zod';
@@ -18,6 +18,10 @@ const initialValues = ref({
 const email = ref('');
 const password = ref('');
 const backendUrl = import.meta.env.VITE_BACKEND_API_URL;
+
+watch(email, (newValue) => {
+  email.value = newValue.trim();
+});
 
 const resolver = ref(zodResolver(
   z.object({
@@ -46,7 +50,7 @@ const resolver = ref(zodResolver(
     }
 
     if (response.data) {
-      console.log(response.data);
+      // console.log(response.data);
       localStorage.setItem('token', response.data.token);
       store.setUname(response.data.uname);
       store.setEmail(response.data.email);
@@ -76,7 +80,7 @@ const resolver = ref(zodResolver(
 const onFormSubmit = async ({ valid }) => {
   if (valid) {
     toast.add({ severity: 'success', summary: 'Logged In', life: 3000 });
-    router.push('/');
+    router.push('/product');
   }
 };
 
@@ -113,7 +117,7 @@ const onFormSubmit = async ({ valid }) => {
                     <Button type="submit" severity="primary" label="Log In" fluid="" />
                   </div>
                   <div class="col-12 md:col-4">
-                    <Button severity="secondary" label="Back to Home" @click="router.push('/')" fluid/>
+                    <Button severity="secondary" label="Back to Home" @click="router.push('/product')" fluid/>
                   </div>
                   <div class="col-12 md:col-4">
                     <Button severity="secondary" label="Forgot Password" @click="router.push('/user/forgot-password')" fluid/>

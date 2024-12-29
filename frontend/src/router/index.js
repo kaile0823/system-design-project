@@ -31,9 +31,8 @@ const routes = [
     ]
    },
   {
-    path: '/', component: MainView,    
+    path: '/', component: MainView, redirect: 'product', 
     children: [
-      { path: '', component: HomeView },
       { path: 'product', component: ProductView },
       { path: 'post', component: PostView },
       { path: 'cart', component: CartView },

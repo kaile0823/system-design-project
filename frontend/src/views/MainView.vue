@@ -11,8 +11,8 @@ const token = localStorage.getItem('token');
 const backendUrl = import.meta.env.VITE_BACKEND_API_URL;
 
 onMounted(async () => {
-    console.log(backendUrl, 'test')
     try {
+        if(!token) return;
         const response = await axios.post(`${backendUrl}/api/users/verify-token`, { token: token });
         // console.log(response.data);
         store.setUname(response.data.uname);
@@ -23,8 +23,6 @@ onMounted(async () => {
     catch (error) {
         console.log(error);
     }
-    console.log('start');
-
 });
 
 </script>
@@ -36,19 +34,21 @@ onMounted(async () => {
             <MobileNavbarComp />
         </div>
 
-        <div class="hidden md:block  p-4 justify-content-center" style="background-color: var(--p-primary-color)">
+        <div class="hidden md:block  p-3 justify-content-center" style="background-color: var(--p-primary-color)">
             <!-- Desktop Version -->
             <NavbarComp />
         </div>
 
-        <div class="p-4" style="background-color: var(--p-surface-100); min-height: 80vh;">
-            <router-view />
+        <div class="p-3" style="background-color: var(--p-surface-100); min-height: 80vh;">
+            <router-view /> 
         </div>
 
-        <div class="p-4" style="background-color: var(--p-primary-color)">
+        <div class="p-3" style="background-color: var(--p-primary-color)">
             <footer>
-                <p class="text-center">© 2024 NCUE System Design Project Team 11</p>
+                <p class="text-center text-white">© 2024 NCUE System Design Project</p>
             </footer>
         </div>
     </div>
+
+    <!-- <a href="https://www.flaticon.com/free-icons/online-shopping" title="online-shopping icons">Online-shopping icons created by Ongicon - Flaticon</a> -->
 </template>

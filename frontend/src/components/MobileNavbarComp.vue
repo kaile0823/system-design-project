@@ -36,8 +36,9 @@ const openCart = async () => {
 
 const logout = () => {
     localStorage.clear();
-    store.clear;
+    store.clear();
     isLoggedIn.value = false;
+    console.log(store.getUname);
     router.push('/user/login');
 }
 
@@ -57,6 +58,27 @@ function toggleDarkMode() {
                     <Button type="button" @click="closeCallback" icon="pi pi-times" rounded outlined />
                 </div>
                 <div class="overflow-y-auto flex flex-column justify-content-center pt-3 px-4 gap-5 my-4">
+
+                    <a @click="openCart" class="flex align-items-center gap-2"><i class="pi pi-shopping-cart" />Shopping
+                        Cart</a>
+                    <a @click="toggleDarkMode()">
+                        <div v-if="dark" class="flex align-items-center gap-2">
+                            <i class="pi pi-sun"></i> Light Mode
+                        </div>
+                        <div v-else class="flex align-items-center gap-2">
+                            <i class="pi pi-moon"></i> Dark Mode
+                        </div>
+                    </a>
+                    <router-link v-if="!store.getUname" to="/user/login">
+                        <a class="flex align-items-center gap-2"><i class="pi pi-user" />Log In</a>
+                    </router-link>
+                    <a v-else @click="logout" class="flex align-items-center gap-2"><i class="pi pi-sign-out" />Log
+                        Out</a>
+                    <router-link v-if="store.getUname" to="/user" class="font-bold"> User: {{ store.getUname
+                        }}
+                    </router-link>
+                    <router-link v-else to="/user" class="font-bold"> User: Guest </router-link>
+
                     <!-- <router-link to="/">
                         <a>Home</a>
                     </router-link> -->
@@ -81,8 +103,8 @@ function toggleDarkMode() {
     </Drawer>
 
     <div class="flex justify-content-between align-items-center p-2">
-        <Button icon="pi pi-bars" @click="visible = true" />
-        <div class="flex justify-content-center align-items-center gap-5">
+        <Button icon="pi pi-bars p-2" @click="visible = true" />
+        <!-- <div class="flex justify-content-center align-items-center gap-5">
             <a @click="openCart"><i class="pi pi-shopping-cart text-white" /></a>
             <a @click="toggleDarkMode()">
                 <i v-if="dark" class="pi pi-sun text-white"></i>
@@ -95,6 +117,13 @@ function toggleDarkMode() {
             <router-link v-if="store.getUname" to="/user" class="font-bold text-white"> User: {{ store.getUname }}
             </router-link>
             <router-link v-else to="/user" class="font-bold text-white"> User: Guest </router-link>
-        </div>
+        </div> -->
+        <router-link to="/product">
+            <div class="flex align-items-center justify-content-center"
+                style="width: 36px; height: 36px; background-color: white; border-radius: 50%;">
+                <img src="@/assets/shopping-bag-32px.png"
+                    style="width: 80%; height: 80%; object-fit: cover; object-position: center;" />
+            </div>
+        </router-link>
     </div>
 </template>

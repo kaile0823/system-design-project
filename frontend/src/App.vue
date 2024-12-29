@@ -7,9 +7,6 @@ axios.defaults.headers.post['Content-Type'] = 'application/json';
 
 <template>
   <main class="inherit-dimension">
-    <!-- <transition name="fade" mode="out-in">
-            <router-view />
-        </transition> -->
     <router-view v-slot="{ Component }">
       <transition name="fade" mode="out-in">
         <component :is="Component" />
